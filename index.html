@@ -45,7 +45,7 @@
             font-weight: bold !important;
         }
         
-        /* Modal Animation (Support Bottom Sheet on Mobile) */
+        /* Modal Animation */
         .modal-open { overflow: hidden; }
         .modal-overlay { transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-content { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -180,20 +180,20 @@
     <!-- MODAL FORM (ADD / EDIT) - BOTTOM SHEET ON MOBILE -->
     <div id="formModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center">
         <!-- Overlay -->
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0" onclick="closeModal()"></div>
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0 transition-opacity duration-300" onclick="closeModal()"></div>
         
         <!-- Content -->
-        <div class="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 flex flex-col max-h-[92vh] md:max-h-[90vh]">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-1 md:hidden"></div>
+        <div class="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 flex flex-col max-h-[92vh] md:max-h-[90vh] transition-all duration-300">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-1 md:hidden shrink-0"></div>
             
-            <div class="px-5 md:px-6 py-3 md:py-4 border-b border-slate-100 flex justify-between items-center">
+            <div class="px-5 md:px-6 py-3 md:py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
                 <h3 id="modalTitle" class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <i data-lucide="file-edit" class="w-5 h-5 text-indigo-500"></i> Input Absensi
                 </h3>
                 <button onclick="closeModal()" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
-            <div class="p-5 md:p-6 overflow-y-auto form-scroll-area">
+            <div class="p-5 md:p-6 overflow-y-auto form-scroll-area flex-1">
                 <form id="absenForm" class="space-y-4">
                     <input type="hidden" id="inputId">
 
@@ -271,7 +271,7 @@
                 </form>
             </div>
             
-            <div class="px-5 md:px-6 py-4 md:py-5 border-t border-slate-100 bg-white flex flex-row justify-between items-center rounded-b-2xl md:bg-slate-50 gap-2">
+            <div class="px-5 md:px-6 py-4 pb-8 md:pb-5 border-t border-slate-100 bg-white flex flex-row justify-between items-center md:rounded-b-2xl md:bg-slate-50 gap-2 shrink-0">
                 <button type="button" id="btnHapus" onclick="deleteData()" class="hidden text-red-600 bg-red-50 hover:bg-red-100 px-4 py-3 md:py-2.5 rounded-xl font-medium transition-colors text-sm items-center gap-2">
                     <i data-lucide="trash-2" class="w-5 h-5 md:w-4 md:h-4"></i> <span class="hidden md:inline">Hapus</span>
                 </button>
@@ -286,8 +286,8 @@
 
     <!-- MODAL EXPORT LAPORAN -->
     <div id="exportModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0" onclick="closeExportModal()"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 mx-0 md:mx-4 p-6 pb-8 md:pb-6">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0 transition-opacity duration-300" onclick="closeExportModal()"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 mx-0 md:mx-4 p-6 pb-8 md:pb-6 transition-all duration-300">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 md:hidden"></div>
             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
                 <i data-lucide="download" class="w-5 h-5 text-indigo-500"></i> Export Laporan
@@ -309,11 +309,13 @@
     </div>
 
     <!-- MODAL PREVIEW LAPORAN (INTERAKTIF SEBELUM DOWNLOAD) -->
-    <div id="previewModal" class="fixed inset-0 z-[60] hidden items-center justify-center">
-        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onclick="closePreviewModal()"></div>
-        <div class="relative bg-white w-full max-w-5xl rounded-t-3xl md:rounded-2xl shadow-2xl mx-0 md:mx-4 flex flex-col h-[90vh] md:max-h-[90vh] translate-y-full md:translate-y-0 transition-transform duration-300" id="previewModalContent">
+    <div id="previewModal" class="fixed inset-0 z-[60] hidden items-end md:items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closePreviewModal()"></div>
+        <div class="relative bg-white w-full max-w-5xl rounded-t-3xl md:rounded-2xl shadow-2xl mx-0 md:mx-4 flex flex-col h-[85vh] md:h-auto md:max-h-[90vh] translate-y-full md:translate-y-0 md:scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
             
-            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-3xl md:rounded-t-2xl z-10 shadow-sm">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-1 md:hidden shrink-0"></div>
+
+            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white md:rounded-t-2xl z-10 shadow-sm shrink-0">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                     <i data-lucide="eye" class="w-5 h-5 text-indigo-500"></i> Preview Laporan Absensi
                 </h3>
@@ -321,8 +323,8 @@
             </div>
             
             <!-- Area Render & Preview Dinamis -->
-            <div class="flex-1 overflow-auto bg-slate-200 p-2 sm:p-4 flex flex-col items-center">
-                <!-- TEMPLATE LAPORAN TERSEMBUNYI DIPINDAHKAN KESINI UNTUK PREVIEW -->
+            <div class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 p-2 sm:p-4 flex flex-col items-center">
+                <!-- TEMPLATE LAPORAN DIPINDAHKAN KESINI UNTUK PREVIEW -->
                 <div id="printArea" class="shadow-xl transition-transform origin-top">
                     <div class="print-card">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; text-align: left;">
@@ -366,11 +368,11 @@
                 </div>
             </div>
             
-            <div class="px-5 py-4 border-t border-slate-100 bg-white rounded-b-2xl flex flex-wrap justify-end gap-3 z-10 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
-                <button onclick="shareWA()" class="bg-[#25D366] hover:bg-[#20b958] text-white px-5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm w-full sm:w-auto"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim ke WhatsApp</button>
-                <div class="flex gap-3 w-full sm:w-auto">
-                    <button onclick="downloadPDF()" id="btnPdf" class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="file-text" class="w-4 h-4"></i> PDF Document</button>
-                    <button onclick="downloadPNG()" id="btnPng" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="image" class="w-4 h-4"></i> Simpan Gambar</button>
+            <div class="px-5 py-4 pb-8 md:pb-4 border-t border-slate-100 bg-white md:rounded-b-2xl flex flex-wrap justify-end gap-2 md:gap-3 z-10 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)] shrink-0">
+                <button onclick="shareWA()" class="bg-[#25D366] hover:bg-[#20b958] text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm w-full sm:w-auto mb-2 sm:mb-0"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim WhatsApp</button>
+                <div class="flex gap-2 md:gap-3 w-full sm:w-auto">
+                    <button onclick="downloadPDF()" id="btnPdf" class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="file-text" class="w-4 h-4"></i> PDF</button>
+                    <button onclick="downloadPNG()" id="btnPng" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="image" class="w-4 h-4"></i> Simpan Gambar</button>
                 </div>
             </div>
         </div>
@@ -410,14 +412,14 @@
             disableMobile: false
         });
 
-        // Init FullCalendar (Selalu gunakan dayGridMonth agar bisa klik tanggal di HP)
+        // Init FullCalendar
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'id',
-                initialView: 'dayGridMonth', // Selalu tampilkan format kalender bulanan baik di HP maupun Laptop
+                initialView: 'dayGridMonth',
                 headerToolbar: {
-                    left: isMobile ? 'prev,next' : 'prev,next today', // Di HP tombol 'Hari Ini' dipindah ke kanan agar rapi
+                    left: isMobile ? 'prev,next' : 'prev,next today',
                     center: 'title',
                     right: isMobile ? 'today' : 'dayGridMonth,listWeek' 
                 },
@@ -434,7 +436,6 @@
                     let jam = arg.event.extendedProps.jam || '-';
                     let shift = arg.event.extendedProps.shift || '-';
                     
-                    // Style Teks Kalender Super Jelas
                     return { html: `
                         <div style="padding: 3px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
                             <div style="background-color: white; color: #1e293b; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); width: 100%; text-align: center; margin-bottom: 3px; letter-spacing: 0.5px;">
@@ -447,7 +448,13 @@
                     ` };
                 },
                 dateClick: function(info) {
-                    openModal('create', null, info.dateStr);
+                    const fp = document.getElementById('inputTanggal')._flatpickr;
+                    if(fp) {
+                        fp.setDate(info.dateStr);
+                    } else {
+                        document.getElementById('inputTanggal').value = info.dateStr;
+                    }
+                    openModal('create');
                 },
                 eventClick: function(info) {
                     if(info.event.extendedProps.isHoliday) return;
@@ -583,7 +590,6 @@
                 };
             });
 
-            // DAFTAR HARI RAYA NASIONAL & LOKAL BALI (2026)
             const holidayEvents = [
                 { title: "Tahun Baru Masehi", start: "2026-01-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Tahun Baru Imlek", start: "2026-02-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
@@ -753,7 +759,6 @@
                 document.getElementById('modalTitle').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Input Absensi';
                 btnHapus.style.display = 'none';
                 
-                // Set tanggal sesuai dengan yang diklik di kalender, atau hari ini jika dari tombol "Input Absen"
                 const today = new Date().toISOString().split('T')[0];
                 const targetDate = selectedDate || today;
                 
@@ -853,12 +858,14 @@
         function closePreviewModal() {
             const modal = document.getElementById('previewModal');
             const content = document.getElementById('previewModalContent');
-            content.classList.add('translate-y-full');
+            
+            modal.querySelector('.absolute').classList.add('opacity-0');
+            content.classList.add('translate-y-full', 'opacity-0');
+            if(!isMobile) content.classList.add('md:scale-95');
             
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                content.classList.remove('translate-y-full');
             }, 300);
         }
 
@@ -957,25 +964,28 @@
             previewModal.classList.remove('hidden');
             previewModal.classList.add('flex');
             
-            // LOGIKA RESPONSIVE PREVIEW UNTUK HP
+            // Terapkan animasi muncul
             setTimeout(() => {
+                previewModal.querySelector('.absolute').classList.remove('opacity-0');
+                const content = document.getElementById('previewModalContent');
+                content.classList.remove('translate-y-full', 'opacity-0', 'md:scale-95');
+                
+                // LOGIKA RESPONSIVE PREVIEW UNTUK HP
                 const printArea = document.getElementById('printArea');
                 const container = printArea.parentElement;
-                const availableWidth = container.clientWidth - 32; // padding 16px x 2
+                const availableWidth = container.clientWidth - 16;
                 
                 if (availableWidth < 900) {
                     const scale = availableWidth / 900;
                     printArea.style.transform = `scale(${scale})`;
                     printArea.style.transformOrigin = 'top center';
-                    
-                    // Hitung tinggi asli dan hapus spasi kosong di bawah akibat scale
                     const originalHeight = printArea.offsetHeight;
                     printArea.style.marginBottom = `-${originalHeight * (1 - scale)}px`;
                 } else {
                     printArea.style.transform = 'none';
                     printArea.style.marginBottom = '0px';
                 }
-            }, 50);
+            }, 10);
             
             btn.innerHTML = `Buat Preview`;
         }
