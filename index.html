@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Absensi Karyawan</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,19 +20,24 @@
     <style>
         /* Penyesuaian Kalender Tailwind */
         .fc { font-family: inherit; }
-        .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 700 !important; color: #4f46e5; }
-        .fc-button-primary { background-color: #4f46e5 !important; border-color: #4f46e5 !important; transition: all 0.2s; }
+        .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 700 !important; color: #4f46e5; }
+        @media (min-width: 768px) { .fc-toolbar-title { font-size: 1.25rem !important; } }
+        .fc-button-primary { background-color: #4f46e5 !important; border-color: #4f46e5 !important; transition: all 0.2s; text-transform: capitalize; }
         .fc-button-primary:hover { background-color: #4338ca !important; border-color: #4338ca !important; }
         .fc-event { cursor: pointer; border-radius: 4px; padding: 2px 4px; border: none !important; font-size: 0.8rem; }
         .fc-event-morning { background-color: #ffedd5 !important; color: #c2410c !important; }
         .fc-event-middle { background-color: #dbeafe !important; color: #1d4ed8 !important; }
         .fc-event-off { background-color: #f1f5f9 !important; color: #475569 !important; }
         .fc-event-izin { background-color: #fee2e2 !important; color: #b91c1c !important; }
+        .fc-list-event { cursor: pointer; }
         
-        /* Modal Animation */
+        /* Modal Animation (Support Bottom Sheet on Mobile) */
         .modal-open { overflow: hidden; }
-        .modal-overlay { transition: opacity 0.3s; }
-        .modal-content { transition: transform 0.3s, opacity 0.3s; }
+        .modal-overlay { transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-content { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Fix for iOS input zoom */
+        input, select { font-size: 16px !important; }
 
         /* Print Area Hidden (Untuk Generate PNG) */
         #printArea {
@@ -47,75 +52,75 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 font-sans text-slate-800 pb-10">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20 md:pb-10">
     
-    <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+    <div class="max-w-7xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
         
         <!-- Header -->
-        <header class="bg-white rounded-2xl shadow-sm p-5 md:p-6 flex flex-col md:flex-row items-center justify-between border border-slate-100">
+        <header class="bg-white rounded-2xl shadow-sm p-4 md:p-6 flex flex-col md:flex-row items-center justify-between border border-slate-100 text-center md:text-left">
             <div>
-                <h1 class="text-2xl md:text-3xl font-bold text-indigo-600 flex items-center gap-3">
-                    <i data-lucide="calendar-clock" class="w-8 h-8"></i>
+                <h1 class="text-xl md:text-3xl font-bold text-indigo-600 flex items-center justify-center md:justify-start gap-2 md:gap-3">
+                    <i data-lucide="calendar-clock" class="w-6 h-6 md:w-8 md:h-8"></i>
                     Manajemen Absensi
                 </h1>
-                <p class="text-slate-500 mt-1 text-sm md:text-base">Kelola jadwal shift, libur, izin, dan histori karyawan.</p>
+                <p class="text-slate-500 mt-1 text-xs md:text-base">Kelola jadwal shift, libur, izin, dan histori.</p>
             </div>
-            <div class="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
-                <button onclick="openExportModal()" class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 shadow-sm">
-                    <i data-lucide="download" class="w-5 h-5 text-indigo-500"></i> Export Laporan
+            <div class="flex flex-wrap items-center justify-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
+                <button onclick="openExportModal()" class="flex-1 md:flex-none bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-medium transition-colors flex justify-center items-center gap-2 shadow-sm text-sm md:text-base">
+                    <i data-lucide="download" class="w-4 h-4 md:w-5 md:h-5 text-indigo-500"></i> Laporan
                 </button>
-                <button onclick="openModal('create')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 shadow-sm">
+                <button onclick="openModal('create')" class="hidden md:flex flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-medium transition-colors justify-center items-center gap-2 shadow-sm text-sm md:text-base">
                     <i data-lucide="plus" class="w-5 h-5"></i> Input Absen
                 </button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
             
             <!-- Area Kalender -->
-            <div class="lg:col-span-8 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
-                <div class="flex items-center gap-2 mb-4 text-slate-700 font-semibold">
+            <div class="lg:col-span-8 bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center gap-2 mb-3 md:mb-4 text-slate-700 font-semibold text-sm md:text-base">
                     <i data-lucide="calendar-days" class="w-5 h-5 text-indigo-500"></i> Kalender Jadwal
                 </div>
-                <div id="calendar" class="min-h-[500px]"></div>
+                <div id="calendar" class="min-h-[400px] md:min-h-[500px] text-xs md:text-sm"></div>
             </div>
 
             <!-- Panel Bantuan Samping -->
-            <div class="lg:col-span-4 space-y-6">
-                <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                    <h3 class="font-bold text-indigo-800 flex items-center gap-2 mb-3">
-                        <i data-lucide="info" class="w-5 h-5"></i> Panduan
-                    </h3>
-                    <ul class="space-y-3 text-sm text-indigo-900/80">
-                        <li class="flex items-start gap-2"><i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0 mt-0.5"></i> Klik tanggal pada kalender untuk menambah absen di hari tersebut.</li>
-                        <li class="flex items-start gap-2"><i data-lucide="edit-3" class="w-4 h-4 shrink-0 mt-0.5"></i> Klik nama karyawan di dalam kalender untuk melihat detail, mengedit, atau menghapus data.</li>
-                        <li class="flex items-start gap-2"><i data-lucide="file-image" class="w-4 h-4 shrink-0 mt-0.5"></i> Gunakan tombol Export untuk mengunduh laporan absen berupa gambar (PNG).</li>
-                    </ul>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4">
+            <div class="lg:col-span-4 space-y-4 md:space-y-6">
+                <!-- Statistik Cepat -->
+                <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-3 md:mb-4 text-sm md:text-base">
                         <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i> Statistik Cepat
                     </h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-                            <div class="text-2xl font-bold text-slate-800" id="statTotal">-</div>
-                            <div class="text-xs text-slate-500 font-medium">Total Record</div>
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div class="bg-slate-50 p-3 md:p-4 rounded-xl border border-slate-100 text-center">
+                            <div class="text-xl md:text-2xl font-bold text-slate-800" id="statTotal">-</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Total Record</div>
                         </div>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-                            <div class="text-2xl font-bold text-red-500" id="statLembur">-</div>
-                            <div class="text-xs text-slate-500 font-medium">Total Lembur</div>
+                        <div class="bg-slate-50 p-3 md:p-4 rounded-xl border border-slate-100 text-center">
+                            <div class="text-xl md:text-2xl font-bold text-red-500" id="statLembur">-</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Total Lembur</div>
                         </div>
                     </div>
+                </div>
+
+                <div class="bg-indigo-50 p-4 md:p-6 rounded-2xl border border-indigo-100">
+                    <h3 class="font-bold text-indigo-800 flex items-center gap-2 mb-2 md:mb-3 text-sm md:text-base">
+                        <i data-lucide="info" class="w-5 h-5"></i> Panduan
+                    </h3>
+                    <ul class="space-y-2 text-xs md:text-sm text-indigo-900/80">
+                        <li class="flex items-start gap-2"><i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0 mt-0.5"></i> Klik tanggal pada kalender untuk menambah absen di hari tersebut.</li>
+                        <li class="flex items-start gap-2"><i data-lucide="edit-3" class="w-4 h-4 shrink-0 mt-0.5"></i> Klik nama karyawan di dalam kalender untuk melihat detail, mengedit, atau menghapus data.</li>
+                    </ul>
                 </div>
             </div>
 
         </div>
 
-        <!-- Tabel Histori -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mt-8">
-            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <h2 class="text-lg font-semibold flex items-center gap-2">
+        <!-- Tabel Histori (Lebih responsif untuk HP) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mt-4 md:mt-8">
+            <div class="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-sm md:text-lg font-semibold flex items-center gap-2">
                     <i data-lucide="history" class="w-5 h-5 text-indigo-500"></i>
                     Histori Data Karyawan
                 </h2>
@@ -125,21 +130,21 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm whitespace-nowrap">
+                <table class="w-full text-left text-xs md:text-sm whitespace-nowrap min-w-[600px]">
                     <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
                         <tr>
-                            <th class="px-6 py-4 font-semibold">Tanggal Input</th>
-                            <th class="px-6 py-4 font-semibold">Nama Karyawan</th>
-                            <th class="px-6 py-4 font-semibold">Jadwal</th>
-                            <th class="px-6 py-4 font-semibold">Jam</th>
-                            <th class="px-6 py-4 font-semibold">Shift/Tipe</th>
-                            <th class="px-6 py-4 font-semibold">Lembur</th>
-                            <th class="px-6 py-4 font-semibold text-center">Aksi</th>
+                            <th class="px-4 py-3 font-semibold">Tgl Input</th>
+                            <th class="px-4 py-3 font-semibold">Nama Karyawan</th>
+                            <th class="px-4 py-3 font-semibold">Jadwal</th>
+                            <th class="px-4 py-3 font-semibold">Jam</th>
+                            <th class="px-4 py-3 font-semibold">Shift/Tipe</th>
+                            <th class="px-4 py-3 font-semibold">Lembur</th>
+                            <th class="px-4 py-3 font-semibold text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-slate-100">
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-slate-400">
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-400">
                                 <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500"></i> Memuat data dari Google Sheet...
                             </td>
                         </tr>
@@ -149,54 +154,63 @@
         </div>
     </div>
 
-    <!-- MODAL FORM (ADD / EDIT) -->
-    <div id="formModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+    <!-- FLOATING ACTION BUTTON (KHUSUS HP) -->
+    <button onclick="openModal('create')" class="md:hidden fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-indigo-700 hover:scale-105 transition-all z-40 focus:outline-none">
+        <i data-lucide="plus" class="w-7 h-7"></i>
+    </button>
+
+    <!-- MODAL FORM (ADD / EDIT) - BOTTOM SHEET ON MOBILE -->
+    <div id="formModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center">
         <!-- Overlay -->
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0" onclick="closeModal()"></div>
         
         <!-- Content -->
-        <div class="relative bg-white w-full max-w-lg rounded-2xl shadow-xl modal-content opacity-0 scale-95 mx-4 flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                <h3 id="modalTitle" class="text-xl font-bold text-slate-800 flex items-center gap-2">
+        <div class="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 flex flex-col max-h-[92vh] md:max-h-[90vh]">
+            <!-- Handle Drag (Mobile visual cue) -->
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-1 md:hidden"></div>
+            
+            <div class="px-5 md:px-6 py-3 md:py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <i data-lucide="file-edit" class="w-5 h-5 text-indigo-500"></i> Input Absensi
                 </h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeModal()" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto">
+            <div class="p-5 md:p-6 overflow-y-auto form-scroll-area">
                 <form id="absenForm" class="space-y-4">
                     <input type="hidden" id="inputId">
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Karyawan</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Karyawan & Jabatan</label>
                         <div class="relative">
-                            <i data-lucide="user" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
-                            <input type="text" id="inputNama" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="John Doe">
+                            <i data-lucide="user" class="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400"></i>
+                            <input type="text" id="inputNama" required class="w-full pl-11 pr-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm" placeholder="Contoh: Yessi Roida - SMD">
                         </div>
+                        <p class="text-[10px] text-slate-400 mt-1 ml-1">*Nama akan tersimpan otomatis untuk input selanjutnya.</p>
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
                         <div class="relative">
-                            <i data-lucide="calendar-days" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
-                            <input type="date" id="inputTanggal" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white" placeholder="Pilih Tanggal">
+                            <i data-lucide="calendar-days" class="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400"></i>
+                            <input type="date" id="inputTanggal" required class="w-full pl-11 pr-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm" placeholder="Pilih Tanggal">
                         </div>
                     </div>
 
-                    <!-- Tipe Kehadiran (BARU) -->
+                    <!-- Tipe Kehadiran -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Tipe Kehadiran</label>
-                        <select id="inputTipe" onchange="toggleTipeAbsen()" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                        <select id="inputTipe" onchange="toggleTipeAbsen()" class="w-full px-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm appearance-none">
                             <option value="hadir">Hadir (Kerja Normal)</option>
                             <option value="offday">Off Day (Libur)</option>
                             <option value="izin">Izin / Cuti</option>
                         </select>
                     </div>
 
-                    <!-- Keterangan Izin (Hidden by default) -->
+                    <!-- Keterangan Izin -->
                     <div id="divKeterangan" class="hidden">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Keterangan Izin</label>
-                        <select id="inputKeterangan" onchange="calculateLogic()" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                        <select id="inputKeterangan" onchange="calculateLogic()" class="w-full px-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm appearance-none">
                             <option value="Sakit">Sakit</option>
                             <option value="Cuti Tahunan">Cuti Tahunan</option>
                             <option value="Keperluan Keluarga">Keperluan Keluarga</option>
@@ -204,70 +218,72 @@
                         </select>
                     </div>
 
-                    <div id="divWaktu" class="grid grid-cols-2 gap-4 transition-all">
+                    <!-- Jam Masuk & Keluar: Stack on mobile, side-by-side on desktop -->
+                    <div id="divWaktu" class="grid grid-cols-1 sm:grid-cols-2 gap-4 transition-all">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Jam Masuk</label>
                             <div class="relative">
-                                <i data-lucide="clock" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
-                                <input type="text" id="inputJamMasuk" class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white" placeholder="00:00">
+                                <i data-lucide="clock" class="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400"></i>
+                                <input type="text" id="inputJamMasuk" class="w-full pl-11 pr-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm" placeholder="00:00">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Jam Keluar</label>
                             <div class="relative">
-                                <i data-lucide="clock" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
-                                <input type="text" id="inputJamKeluar" class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white" placeholder="00:00">
+                                <i data-lucide="clock" class="absolute left-3.5 top-3.5 w-5 h-5 text-slate-400"></i>
+                                <input type="text" id="inputJamKeluar" class="w-full pl-11 pr-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm" placeholder="00:00">
                             </div>
                         </div>
                     </div>
 
                     <!-- Otomatis Kalkulasi -->
-                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mt-2">
-                        <div class="flex justify-between items-center text-sm mb-2">
-                            <span class="text-slate-500">Kalkulasi Sistem:</span>
-                            <span class="font-medium text-indigo-600" id="calcHari">-</span>
+                    <div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 mt-2">
+                        <div class="flex justify-between items-center text-xs md:text-sm mb-2">
+                            <span class="text-slate-500 font-medium">Kalkulasi Sistem:</span>
+                            <span class="font-bold text-indigo-600" id="calcHari">-</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <span id="calcShift" class="px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600">Shift: -</span>
-                            <span id="calcLembur" class="px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600">Lembur: 0 Jam</span>
+                            <span id="calcShift" class="px-2 py-1 rounded-md text-[11px] md:text-xs font-semibold bg-slate-200 text-slate-600">Shift: -</span>
+                            <span id="calcLembur" class="px-2 py-1 rounded-md text-[11px] md:text-xs font-semibold bg-slate-200 text-slate-600">Lembur: 0 Jam</span>
                         </div>
                     </div>
 
                     <!-- Notifikasi Status -->
-                    <div id="statusMsg" class="hidden p-3 rounded-lg text-sm flex items-center gap-2"></div>
+                    <div id="statusMsg" class="hidden p-3 rounded-xl text-sm flex items-center gap-2 font-medium"></div>
 
                 </form>
             </div>
             
-            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center rounded-b-2xl">
-                <button type="button" id="btnHapus" onclick="deleteData()" class="hidden text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors text-sm items-center gap-2">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Data
+            <div class="px-5 md:px-6 py-4 md:py-5 border-t border-slate-100 bg-white flex flex-row justify-between items-center rounded-b-2xl md:bg-slate-50 gap-2">
+                <button type="button" id="btnHapus" onclick="deleteData()" class="hidden text-red-600 bg-red-50 hover:bg-red-100 px-4 py-3 md:py-2.5 rounded-xl font-medium transition-colors text-sm items-center gap-2">
+                    <i data-lucide="trash-2" class="w-5 h-5 md:w-4 md:h-4"></i> <span class="hidden md:inline">Hapus</span>
                 </button>
                 <div class="flex-1"></div>
-                <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-medium transition-colors mr-2">Batal</button>
-                <button type="button" id="btnSimpan" onclick="saveData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
-                    <span id="textSimpan">Simpan</span>
+                <button type="button" onclick="closeModal()" class="px-5 py-3 md:py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors text-sm md:text-base">Batal</button>
+                <button type="button" id="btnSimpan" onclick="saveData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 md:py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] text-sm md:text-base">
+                    <span id="textSimpan">Simpan Absen</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- MODAL EXPORT LAPORAN -->
-    <div id="exportModal" class="fixed inset-0 z-50 hidden items-center justify-center">
-        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="closeExportModal()"></div>
-        <div class="relative bg-white w-full max-w-sm rounded-2xl shadow-xl mx-4 p-6">
+    <div id="exportModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0" onclick="closeExportModal()"></div>
+        <div class="relative bg-white w-full max-w-sm rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 mx-0 md:mx-4 p-6 pb-8 md:pb-6">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 md:hidden"></div>
             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-4">
                 <i data-lucide="download" class="w-5 h-5 text-indigo-500"></i> Export Laporan PNG
             </h3>
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Pilih Rentang Tanggal</label>
-                    <input type="text" id="inputExportRange" class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-sm" placeholder="Dari Tanggal - Sampai Tanggal">
+                    <input type="text" id="inputExportRange" class="w-full px-4 py-3 md:py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-sm shadow-sm" placeholder="Dari Tanggal - Sampai Tanggal">
                 </div>
                 <div class="flex gap-2 justify-end pt-2">
-                    <button onclick="closeExportModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors">Batal</button>
-                    <button onclick="generateReport()" id="btnGenerate" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm rounded-lg font-medium transition-colors flex items-center gap-2">
-                        <span>Download PNG</span>
+                    <button onclick="closeExportModal()" class="px-4 py-3 md:py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors">Batal</button>
+                    <button onclick="generateReport()" id="btnGenerate" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 md:py-2 text-sm rounded-xl font-medium transition-colors flex items-center gap-2 shadow-sm">
+                        <span>Download Laporan</span>
                     </button>
                 </div>
             </div>
@@ -291,7 +307,6 @@
                 </tr>
             </thead>
             <tbody id="printTbody">
-                <!-- Data dimasukkan via JS -->
             </tbody>
         </table>
         <div class="mt-6 text-xs text-slate-400 text-right">
@@ -311,34 +326,44 @@
         let formMode = 'create'; 
         let currentCalc = { hari: '', totalJam: 0, shift: '-', lembur: 0 };
 
-        // Flatpickr Waktu
-        const timeConfig = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, onChange: calculateLogic };
+        // Konfigurasi Pickers
+        const isMobile = window.innerWidth < 768;
+        
+        const timeConfig = { 
+            enableTime: true, 
+            noCalendar: true, 
+            dateFormat: "H:i", 
+            time_24hr: true, 
+            onChange: calculateLogic,
+            disableMobile: false // Biarkan HP menggunakan pemilih jam native bawaan HP yang lebih mudah
+        };
         flatpickr("#inputJamMasuk", timeConfig);
         flatpickr("#inputJamKeluar", timeConfig);
         
-        // Flatpickr Range untuk Laporan
         flatpickr("#inputExportRange", {
             mode: "range",
             dateFormat: "Y-m-d",
             altInput: true,
             altFormat: "j F Y",
+            disableMobile: false
         });
 
-        // Init FullCalendar
+        // Init FullCalendar (Otomatis List View di HP)
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'id',
-                initialView: 'dayGridMonth',
+                initialView: isMobile ? 'listWeek' : 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                    right: isMobile ? '' : 'dayGridMonth,listWeek'
                 },
                 buttonText: {
-                    today: 'Hari Ini', month: 'Bulan', week: 'Minggu', list: 'List'
+                    today: 'Hari Ini', month: 'Bulan', list: 'Daftar'
                 },
                 events: [],
+                height: 'auto',
                 dateClick: function(info) {
                     document.getElementById('inputTanggal').value = info.dateStr;
                     openModal('create');
@@ -369,7 +394,7 @@
                 updateStats();
             } catch (err) {
                 console.error("Gagal load data", err);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal mengambil data. Pastikan SCRIPT_URL benar.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal mengambil data. Pastikan jaringan stabil.</td></tr>`;
             } finally {
                 iconRef.classList.remove('animate-spin');
             }
@@ -379,11 +404,10 @@
             const btn = document.getElementById('btnSimpan');
             const txt = document.getElementById('textSimpan');
             
-            // Validasi Input Dasar
+            // Validasi Input
             const nama = document.getElementById('inputNama').value;
             const tglRaw = document.getElementById('inputTanggal').value;
             const tipe = document.getElementById('inputTipe').value;
-            
             let jM = document.getElementById('inputJamMasuk').value;
             let jK = document.getElementById('inputJamKeluar').value;
             
@@ -397,11 +421,13 @@
                 return;
             }
 
+            // SIMPAN NAMA KE LOCALSTORAGE AGAR TIDAK PERLU KETIK LAGI BESOKNYA
+            localStorage.setItem('savedNamaAbsen', nama);
+
             btn.disabled = true;
-            txt.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Memproses...`;
+            txt.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Memproses...`;
             lucide.createIcons();
 
-            // Setup Payload sesuai dengan pilihan "Tipe"
             let finalWaktu = `${jM} - ${jK}`;
             if (tipe === 'offday' || tipe === 'izin') {
                 finalWaktu = '-';
@@ -431,7 +457,7 @@
                 showStatus('Gagal menyimpan ke server', 'error');
             } finally {
                 btn.disabled = false;
-                txt.textContent = 'Simpan';
+                txt.textContent = 'Simpan Absen';
             }
         }
 
@@ -440,14 +466,11 @@
             
             const btn = document.getElementById('btnHapus');
             const originalContent = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menghapus...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>`;
             lucide.createIcons();
             btn.disabled = true;
 
-            const payload = {
-                action: 'delete',
-                id: document.getElementById('inputId').value
-            };
+            const payload = { action: 'delete', id: document.getElementById('inputId').value };
 
             try {
                 await fetch(SCRIPT_URL, {
@@ -492,34 +515,32 @@
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            
             if(appData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400">Belum ada data absensi.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">Belum ada data absensi.</td></tr>`;
                 return;
             }
 
             const sortedData = [...appData].reverse();
-
             sortedData.forEach(item => {
-                let badgeColor = 'bg-blue-100 text-blue-700'; // Default / Middle
+                let badgeColor = 'bg-blue-100 text-blue-700'; 
                 const sh = item.shift.toLowerCase();
                 if(sh.includes('morning')) badgeColor = 'bg-orange-100 text-orange-700';
                 else if(sh.includes('off')) badgeColor = 'bg-slate-200 text-slate-700';
                 else if(sh.includes('izin')) badgeColor = 'bg-red-100 text-red-700';
 
-                const lemburBadge = item.lembur > 0 ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-medium text-xs border border-red-100">${item.lembur} Jam</span>` : '<span class="text-slate-400">-</span>';
+                const lemburBadge = item.lembur > 0 ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-medium text-[10px] md:text-xs border border-red-100">${item.lembur} Jam</span>` : '<span class="text-slate-400">-</span>';
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50/80 transition-colors';
                 tr.innerHTML = `
-                    <td class="px-6 py-3 text-slate-500 text-xs">${item.tanggalInput}</td>
-                    <td class="px-6 py-3 font-medium text-slate-800">${item.nama}</td>
-                    <td class="px-6 py-3 text-slate-600">${item.jadwal}</td>
-                    <td class="px-6 py-3 text-slate-600 font-mono text-sm">${item.jam}</td>
-                    <td class="px-6 py-3"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeColor}">${item.shift}</span></td>
-                    <td class="px-6 py-3">${lemburBadge}</td>
-                    <td class="px-6 py-3 text-center">
-                        <button onclick='editFromTable("${item.id}")' class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-flex"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                    <td class="px-4 py-3 text-slate-500">${item.tanggalInput.split(' ')[0]}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${item.nama}</td>
+                    <td class="px-4 py-3 text-slate-600">${item.jadwal.split(',')[1] || item.jadwal}</td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">${item.jam}</td>
+                    <td class="px-4 py-3"><span class="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-semibold ${badgeColor}">${item.shift}</span></td>
+                    <td class="px-4 py-3">${lemburBadge}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick='editFromTable("${item.id}")' class="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors inline-flex"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -538,14 +559,13 @@
             if(record) openModal('update', record);
         }
 
-        // Toggling UI (Hadir / Off Day / Izin)
         function toggleTipeAbsen() {
             const tipe = document.getElementById('inputTipe').value;
             const divWaktu = document.getElementById('divWaktu');
             const divKet = document.getElementById('divKeterangan');
             
             if(tipe === 'hadir') {
-                divWaktu.classList.remove('hidden', 'opacity-50', 'pointer-events-none');
+                divWaktu.classList.remove('hidden', 'opacity-50', 'pointer-events-none', 'h-0', 'overflow-hidden');
                 divKet.classList.add('hidden');
             } else if (tipe === 'offday') {
                 divWaktu.classList.add('opacity-50', 'pointer-events-none');
@@ -557,7 +577,6 @@
             calculateLogic();
         }
 
-        // Kalkulator
         function calculateLogic() {
             const tgl = document.getElementById('inputTanggal').value;
             const jM = document.getElementById('inputJamMasuk').value;
@@ -565,14 +584,12 @@
             const tipe = document.getElementById('inputTipe').value;
             const ket = document.getElementById('inputKeterangan').value;
 
-            // Cari Nama Hari
             if(tgl) {
                 const hariArr = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
                 currentCalc.hari = hariArr[new Date(tgl).getDay()];
                 document.getElementById('calcHari').textContent = currentCalc.hari + ', ' + formatDateID(tgl);
             }
 
-            // Reset Kalkulasi jika Off Day / Izin
             if (tipe === 'offday') {
                 currentCalc.shift = 'Off Day';
                 currentCalc.lembur = 0;
@@ -595,22 +612,21 @@
                 currentCalc.lembur = 0;
             }
 
-            // Update UI Labels
             let badgeClass = 'bg-slate-200 text-slate-600';
             const sh = currentCalc.shift.toLowerCase();
             if(sh.includes('morning')) badgeClass = 'bg-orange-100 text-orange-700';
             else if(sh.includes('middle')) badgeClass = 'bg-blue-100 text-blue-700';
             else if(sh.includes('izin')) badgeClass = 'bg-red-100 text-red-700';
 
-            document.getElementById('calcShift').textContent = `Shift/Tipe: ${currentCalc.shift}`;
-            document.getElementById('calcShift').className = `px-2 py-1 rounded text-xs font-semibold ${badgeClass}`;
+            document.getElementById('calcShift').textContent = `Shift: ${currentCalc.shift}`;
+            document.getElementById('calcShift').className = `px-2 py-1 rounded-md text-[11px] md:text-xs font-semibold ${badgeClass}`;
             
             if(currentCalc.lembur > 0) {
                 document.getElementById('calcLembur').textContent = `Lembur: ${currentCalc.lembur} Jam`;
-                document.getElementById('calcLembur').className = 'px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 border border-red-200';
+                document.getElementById('calcLembur').className = 'px-2 py-1 rounded-md text-[11px] md:text-xs font-semibold bg-red-100 text-red-700 border border-red-200';
             } else {
                 document.getElementById('calcLembur').textContent = 'Lembur: 0 Jam';
-                document.getElementById('calcLembur').className = 'px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600';
+                document.getElementById('calcLembur').className = 'px-2 py-1 rounded-md text-[11px] md:text-xs font-semibold bg-slate-200 text-slate-600';
             }
         }
         document.getElementById('inputTanggal').addEventListener('change', calculateLogic);
@@ -624,32 +640,39 @@
             const btnHapus = document.getElementById('btnHapus');
             document.getElementById('statusMsg').classList.add('hidden');
             document.getElementById('absenForm').reset();
+            
+            // Auto-fill Nama dari LocalStorage
+            const savedName = localStorage.getItem('savedNamaAbsen') || 'Yessi Roida - SMD';
+            document.getElementById('inputNama').value = savedName;
+            
             document.getElementById('inputTipe').value = 'hadir';
             toggleTipeAbsen();
             
             if(mode === 'create') {
-                document.getElementById('modalTitle').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500"></i> Tambah Absen';
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Input Absensi';
                 btnHapus.style.display = 'none';
-                if(document.getElementById('inputTanggal').value) calculateLogic(); 
+                if(!document.getElementById('inputTanggal').value) {
+                    // Set default today if empty
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('inputTanggal').value = today;
+                }
+                calculateLogic(); 
             } 
             else if (mode === 'update' && data) {
-                document.getElementById('modalTitle').innerHTML = '<i data-lucide="file-edit" class="w-5 h-5 text-indigo-500"></i> Edit / Hapus Absen';
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="file-edit" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Edit Absensi';
                 btnHapus.style.display = 'flex'; 
                 
                 document.getElementById('inputId').value = data.id;
                 document.getElementById('inputNama').value = data.nama;
                 document.getElementById('inputTanggal').value = data.tanggalRaw;
                 
-                // Mendeteksi apakah ini Off Day / Izin berdasarkan Shift
                 const sh = data.shift.toLowerCase();
                 if(sh.includes('off day')) {
                     document.getElementById('inputTipe').value = 'offday';
                 } else if(sh.includes('izin')) {
                     document.getElementById('inputTipe').value = 'izin';
-                    // Coba extract keterangan izin (contoh format: "Izin - Sakit")
                     if(data.shift.includes('-')) {
                         const extractedKet = data.shift.split('-')[1].trim();
-                        // Set nilai keterangan ke opsi yang cocok jika ada
                         const selectKet = document.getElementById('inputKeterangan');
                         for(let i=0; i<selectKet.options.length; i++){
                             if(selectKet.options[i].value === extractedKet) selectKet.selectedIndex = i;
@@ -665,25 +688,28 @@
                         }
                     }
                 }
-                
                 toggleTipeAbsen();
             }
             lucide.createIcons();
             
-            // Show modal
+            // Animasi Modal (Bottom Sheet untuk HP)
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             document.body.classList.add('modal-open');
             setTimeout(() => {
                 modal.querySelector('.modal-overlay').classList.remove('opacity-0');
-                modal.querySelector('.modal-content').classList.remove('opacity-0', 'scale-95');
+                const content = modal.querySelector('.modal-content');
+                content.classList.remove('opacity-0', 'scale-95', 'translate-y-full');
             }, 10);
         }
 
         function closeModal() {
             const modal = document.getElementById('formModal');
             modal.querySelector('.modal-overlay').classList.add('opacity-0');
-            modal.querySelector('.modal-content').classList.add('opacity-0', 'scale-95');
+            const content = modal.querySelector('.modal-content');
+            content.classList.add('opacity-0', 'translate-y-full');
+            if(!isMobile) content.classList.add('scale-95');
+            
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
@@ -696,16 +722,31 @@
             document.getElementById('exportModal').classList.remove('hidden');
             document.getElementById('exportModal').classList.add('flex');
             document.getElementById('inputExportRange')._flatpickr.clear();
+            
+            setTimeout(() => {
+                document.getElementById('exportModal').querySelector('.modal-overlay').classList.remove('opacity-0');
+                const content = document.getElementById('exportModal').querySelector('.modal-content');
+                content.classList.remove('opacity-0', 'scale-95', 'translate-y-full');
+            }, 10);
         }
+        
         function closeExportModal() {
-            document.getElementById('exportModal').classList.add('hidden');
-            document.getElementById('exportModal').classList.remove('flex');
+            const modal = document.getElementById('exportModal');
+            modal.querySelector('.modal-overlay').classList.add('opacity-0');
+            const content = modal.querySelector('.modal-content');
+            content.classList.add('opacity-0', 'translate-y-full');
+            if(!isMobile) content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
         }
 
         async function generateReport() {
             const rangeStr = document.getElementById('inputExportRange').value;
             if(!rangeStr || !rangeStr.includes(' to ')) {
-                alert("Silakan pilih rentang tanggal (Dari - Sampai) dengan benar di kalender popup.");
+                alert("Silakan pilih rentang tanggal.");
                 return;
             }
 
@@ -713,18 +754,16 @@
             btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Memproses...`;
             lucide.createIcons();
             
-            // 1. Filter Data
             const dates = rangeStr.split(' to ');
             const startD = new Date(dates[0]);
             const endD = new Date(dates[1]);
-            endD.setHours(23, 59, 59); // Pastikan mengambil sampai akhir hari
+            endD.setHours(23, 59, 59);
 
             const filtered = appData.filter(d => {
                 const curr = new Date(d.tanggalRaw);
                 return curr >= startD && curr <= endD;
             });
 
-            // 2. Isi Area Print
             document.getElementById('printRange').innerText = `Periode: ${formatDateID(dates[0])} s.d. ${formatDateID(dates[1])}`;
             document.getElementById('printTimestamp').innerText = new Date().toLocaleString('id-ID');
             
@@ -734,9 +773,7 @@
             if(filtered.length === 0) {
                 pBody.innerHTML = `<tr><td colspan="5" class="border border-slate-300 px-4 py-8 text-center text-slate-500">Tidak ada data pada periode ini</td></tr>`;
             } else {
-                // Urutkan berdasarkan tanggal termuda
                 filtered.sort((a,b) => new Date(a.tanggalRaw) - new Date(b.tanggalRaw));
-                
                 filtered.forEach(item => {
                     pBody.innerHTML += `
                         <tr>
@@ -750,27 +787,21 @@
                 });
             }
 
-            // 3. Generate PNG memakai html2canvas
             const printArea = document.getElementById('printArea');
-            // Sedikit trick agar background render putih bersih
             printArea.style.backgroundColor = "#ffffff"; 
 
             try {
-                const canvas = await html2canvas(printArea, { scale: 2 }); // Scale 2 agar HD
+                const canvas = await html2canvas(printArea, { scale: 2 });
                 const image = canvas.toDataURL("image/png");
-                
-                // Trigger download
                 const link = document.createElement('a');
                 link.download = `Laporan_Absen_${dates[0]}_to_${dates[1]}.png`;
                 link.href = image;
                 link.click();
-                
                 closeExportModal();
             } catch (err) {
-                console.error("Gagal export PNG:", err);
                 alert("Terjadi kesalahan saat memproses gambar laporan.");
             } finally {
-                btn.innerHTML = `Download PNG`;
+                btn.innerHTML = `Download Laporan`;
             }
         }
 
@@ -780,10 +811,10 @@
             el.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
             if(type === 'success') {
                 el.classList.add('bg-green-100', 'text-green-700');
-                el.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> ${msg}`;
+                el.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> ${msg}`;
             } else {
                 el.classList.add('bg-red-100', 'text-red-700');
-                el.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i> ${msg}`;
+                el.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5"></i> ${msg}`;
             }
             lucide.createIcons();
         }
