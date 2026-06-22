@@ -4,432 +4,566 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Absensi Karyawan</title>
-    <!-- Tailwind CSS untuk styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Flatpickr CSS & JS (Untuk Kalender Interaktif) -->
+    <!-- Flatpickr (Time Picker) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/id.global.min.js'></script>
+    
+    <style>
+        /* Penyesuaian Kalender Tailwind */
+        .fc { font-family: inherit; }
+        .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 700 !important; color: #4f46e5; }
+        .fc-button-primary { background-color: #4f46e5 !important; border-color: #4f46e5 !important; transition: all 0.2s; }
+        .fc-button-primary:hover { background-color: #4338ca !important; border-color: #4338ca !important; }
+        .fc-event { cursor: pointer; border-radius: 4px; padding: 2px 4px; border: none !important; font-size: 0.8rem; }
+        .fc-event-morning { background-color: #ffedd5 !important; color: #c2410c !important; }
+        .fc-event-middle { background-color: #dbeafe !important; color: #1d4ed8 !important; }
+        
+        /* Modal Animation */
+        .modal-open { overflow: hidden; }
+        .modal-overlay { transition: opacity 0.3s; }
+        .modal-content { transition: transform 0.3s, opacity 0.3s; }
+    </style>
 </head>
-<body class="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
-    <div class="max-w-6xl mx-auto space-y-6">
+<body class="min-h-screen bg-slate-50 font-sans text-slate-800 pb-10">
+    
+    <div class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
         
         <!-- Header -->
-        <header class="bg-white rounded-2xl shadow-sm p-6 flex flex-col md:flex-row items-center justify-between border border-slate-100">
+        <header class="bg-white rounded-2xl shadow-sm p-5 md:p-6 flex flex-col md:flex-row items-center justify-between border border-slate-100">
             <div>
-                <h1 class="text-2xl font-bold text-indigo-600 flex items-center gap-2">
-                    <i data-lucide="calendar" class="w-7 h-7"></i>
-                    Sistem Absensi Karyawan
+                <h1 class="text-2xl md:text-3xl font-bold text-indigo-600 flex items-center gap-3">
+                    <i data-lucide="calendar-clock" class="w-8 h-8"></i>
+                    Manajemen Absensi
                 </h1>
-                <p class="text-slate-500 mt-1">Catat jam kerja, shift, dan hitung lembur otomatis.</p>
+                <p class="text-slate-500 mt-1 text-sm md:text-base">Kelola jadwal shift, lembur, dan histori karyawan.</p>
             </div>
+            <button onclick="openModal('create')" class="mt-4 md:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 shadow-sm">
+                <i data-lucide="plus" class="w-5 h-5"></i> Input Absen Manual
+            </button>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- Form Input Area - Kiri -->
-            <div class="lg:col-span-5 space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2 border-b pb-3">
-                        <i data-lucide="clock" class="w-5 h-5 text-indigo-500"></i>
-                        Input Absen Baru
-                    </h2>
-                    
-                    <form id="absenForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Nama Karyawan</label>
-                            <div class="relative">
-                                <i data-lucide="user" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
-                                <input type="text" id="inputNama" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Masukkan nama">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
-                            <div class="relative">
-                                <i data-lucide="calendar-days" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400 z-10"></i>
-                                <!-- Input ini akan diubah menjadi kalender oleh Flatpickr -->
-                                <input type="text" id="inputTanggal" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white" placeholder="Pilih Tanggal...">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Jam Masuk</label>
-                                <input type="time" id="inputJamMasuk" required class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Jam Keluar</label>
-                                <input type="time" id="inputJamKeluar" required class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
-                            </div>
-                        </div>
-
-                        <!-- Info Kalkulasi Otomatis -->
-                        <div class="bg-indigo-50 rounded-xl p-4 mt-6 border border-indigo-100">
-                            <h3 class="text-xs font-semibold text-indigo-800 uppercase tracking-wider mb-3">Ringkasan Otomatis</h3>
-                            <div class="grid grid-cols-2 gap-y-3 text-sm">
-                                <div class="text-slate-600">Hari:</div>
-                                <div id="summaryHari" class="font-medium text-slate-900">-</div>
-                                
-                                <div class="text-slate-600">Total Jam:</div>
-                                <div class="font-medium text-slate-900"><span id="summaryTotalJam">0</span> Jam</div>
-                                
-                                <div class="text-slate-600">Shift:</div>
-                                <div class="font-medium text-slate-900">
-                                    <span id="summaryShift" class="px-2 py-1 rounded text-xs font-semibold bg-slate-200">-</span>
-                                </div>
-                                
-                                <div class="text-slate-600">Lembur:</div>
-                                <div class="font-medium text-slate-900 flex items-center gap-1">
-                                    <span id="summaryLembur">0</span> Jam
-                                    <span id="badgeLembur" class="hidden text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded">(Overtime)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="demoWarning" class="text-xs text-amber-600 bg-amber-50 p-2 rounded-lg flex items-start gap-2">
-                            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5"></i>
-                            <p>Script URL belum diisi. Silakan isi SCRIPT_URL di dalam kode JavaScript agar bisa menyimpan ke Google Sheet.</p>
-                        </div>
-
-                        <button type="submit" id="btnSubmit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors flex justify-center items-center gap-2 shadow-sm disabled:opacity-70">
-                            <i data-lucide="save" id="iconSave" class="w-5 h-5"></i>
-                            <i data-lucide="refresh-cw" id="iconLoading" class="w-5 h-5 animate-spin hidden"></i>
-                            <span id="textSubmit">Simpan Absen</span>
-                        </button>
-
-                        <div id="msgSuccess" class="hidden items-center gap-2 text-green-600 text-sm justify-center p-2 bg-green-50 rounded-lg">
-                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Data berhasil disimpan!
-                        </div>
-                        <div id="msgError" class="hidden items-center gap-2 text-red-600 text-sm justify-center p-2 bg-red-50 rounded-lg">
-                            <i data-lucide="alert-circle" class="w-4 h-4"></i> <span id="textError">Gagal menyimpan data.</span>
-                        </div>
-                    </form>
+            <!-- Area Kalender -->
+            <div class="lg:col-span-8 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div class="flex items-center gap-2 mb-4 text-slate-700 font-semibold">
+                    <i data-lucide="calendar-days" class="w-5 h-5 text-indigo-500"></i> Kalender Jadwal
                 </div>
+                <div id="calendar" class="min-h-[500px]"></div>
             </div>
 
-            <!-- Table Data Area - Kanan -->
-            <div class="lg:col-span-7">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full">
-                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h2 class="text-lg font-semibold flex items-center gap-2">
-                            <i data-lucide="download-cloud" class="w-5 h-5 text-indigo-500"></i>
-                            Data Tarikan CSV (Live)
-                        </h2>
-                        <button onclick="fetchCSVData()" class="p-2 text-slate-500 hover:bg-white hover:text-indigo-600 rounded-lg transition-colors shadow-sm border border-transparent hover:border-slate-200" title="Refresh Data">
-                            <i data-lucide="refresh-cw" id="iconRefresh" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-0 overflow-x-auto">
-                        <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                <tr>
-                                    <th class="px-6 py-3 font-medium">Hari/Tanggal</th>
-                                    <th class="px-6 py-3 font-medium">Waktu</th>
-                                    <th class="px-6 py-3 font-medium">Shift</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody" class="divide-y divide-slate-100">
-                                <tr>
-                                    <td colspan="3" class="px-6 py-8 text-center text-slate-400">Loading data...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <!-- Panel Bantuan Samping -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                    <h3 class="font-bold text-indigo-800 flex items-center gap-2 mb-3">
+                        <i data-lucide="info" class="w-5 h-5"></i> Panduan
+                    </h3>
+                    <ul class="space-y-3 text-sm text-indigo-900/80">
+                        <li class="flex items-start gap-2"><i data-lucide="mouse-pointer-click" class="w-4 h-4 shrink-0 mt-0.5"></i> Klik tanggal pada kalender untuk menambah absen di hari tersebut.</li>
+                        <li class="flex items-start gap-2"><i data-lucide="edit-3" class="w-4 h-4 shrink-0 mt-0.5"></i> Klik nama karyawan di dalam kalender untuk melihat detail, mengedit, atau menghapus data.</li>
+                        <li class="flex items-start gap-2"><i data-lucide="clock" class="w-4 h-4 shrink-0 mt-0.5"></i> Shift otomatis dihitung berdasarkan jam masuk (Morning / Middle).</li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-4">
+                        <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-500"></i> Statistik Cepat
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
+                            <div class="text-2xl font-bold text-slate-800" id="statTotal">-</div>
+                            <div class="text-xs text-slate-500 font-medium">Total Record</div>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
+                            <div class="text-2xl font-bold text-red-500" id="statLembur">-</div>
+                            <div class="text-xs text-slate-500 font-medium">Total Lembur</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
         </div>
+
+        <!-- Tabel Histori -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mt-8">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-lg font-semibold flex items-center gap-2">
+                    <i data-lucide="history" class="w-5 h-5 text-indigo-500"></i>
+                    Histori Data Karyawan
+                </h2>
+                <button onclick="loadData()" class="p-2 text-slate-500 hover:bg-white hover:text-indigo-600 rounded-lg transition-colors shadow-sm border border-transparent hover:border-slate-200" title="Refresh Data">
+                    <i data-lucide="refresh-cw" id="iconRefresh" class="w-4 h-4"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 font-semibold">Tanggal Input</th>
+                            <th class="px-6 py-4 font-semibold">Nama Karyawan</th>
+                            <th class="px-6 py-4 font-semibold">Jadwal</th>
+                            <th class="px-6 py-4 font-semibold">Jam</th>
+                            <th class="px-6 py-4 font-semibold">Shift</th>
+                            <th class="px-6 py-4 font-semibold">Lembur</th>
+                            <th class="px-6 py-4 font-semibold text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center text-slate-400">
+                                <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-500"></i> Memuat data dari Google Sheet...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- Application Logic -->
+    <!-- MODAL FORM (ADD / EDIT) -->
+    <div id="formModal" class="fixed inset-0 z-50 hidden items-center justify-center">
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0" onclick="closeModal()"></div>
+        
+        <!-- Content -->
+        <div class="relative bg-white w-full max-w-lg rounded-2xl shadow-xl modal-content opacity-0 scale-95 mx-4 flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="file-edit" class="w-5 h-5 text-indigo-500"></i> Input Absensi
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <form id="absenForm" class="space-y-4">
+                    <input type="hidden" id="inputId"> <!-- Hidden ID untuk mode Edit -->
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Nama Karyawan</label>
+                        <div class="relative">
+                            <i data-lucide="user" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
+                            <input type="text" id="inputNama" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="John Doe">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
+                        <div class="relative">
+                            <i data-lucide="calendar-days" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
+                            <input type="date" id="inputTanggal" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white" placeholder="Pilih Tanggal">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Jam Masuk</label>
+                            <div class="relative">
+                                <i data-lucide="clock" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
+                                <input type="text" id="inputJamMasuk" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white" placeholder="00:00">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Jam Keluar</label>
+                            <div class="relative">
+                                <i data-lucide="clock" class="absolute left-3 top-2.5 w-5 h-5 text-slate-400"></i>
+                                <input type="text" id="inputJamKeluar" required class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white" placeholder="00:00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Otomatis Kalkulasi -->
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mt-2">
+                        <div class="flex justify-between items-center text-sm mb-2">
+                            <span class="text-slate-500">Kalkulasi Sistem:</span>
+                            <span class="font-medium text-indigo-600" id="calcHari">-</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <span id="calcShift" class="px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600">Shift: -</span>
+                            <span id="calcLembur" class="px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600">Lembur: 0 Jam</span>
+                        </div>
+                    </div>
+
+                    <!-- Notifikasi Status -->
+                    <div id="statusMsg" class="hidden p-3 rounded-lg text-sm flex items-center gap-2"></div>
+
+                </form>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center rounded-b-2xl">
+                <button type="button" id="btnHapus" onclick="deleteData()" class="hidden text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors text-sm items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Data
+                </button>
+                <div class="flex-1"></div>
+                <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-medium transition-colors mr-2">Batal</button>
+                <button type="button" id="btnSimpan" onclick="saveData()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 shadow-sm">
+                    <span id="textSimpan">Simpan</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC PROGRAM -->
     <script>
-        // Inisialisasi ikon Lucide
         lucide.createIcons();
 
-        // Inisialisasi Kalender Flatpickr
-        flatpickr("#inputTanggal", {
-            locale: "id",           // Menggunakan bahasa Indonesia (Senin, Selasa, dll)
-            dateFormat: "Y-m-d",    // Format rahasia (di belakang layar) untuk diproses
-            altInput: true,         // Menampilkan input UI yang lebih cantik
-            altFormat: "j F Y",     // Format UI (Contoh: 22 Juni 2026)
-            onChange: function() {
-                // Jalankan fungsi kalkulasi otomatis saat tanggal dipilih
-                calculateTime();
-            }
+        // ======= PENTING: GANTI SCRIPT_URL DENGAN URL APPS SCRIPT ANDA =======
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbKi3sAN2cn0RJEFdn7JxYjWg9vrIm1IGn0R9VYetO8bLSdJsH-HUZBrxAquvnLqnT/exec';
+        // =======================================================================
+
+        let appData = [];
+        let calendar;
+        let formMode = 'create'; // 'create' atau 'update'
+        let currentCalc = { hari: '', totalJam: 0, shift: '-', lembur: 0 };
+
+        // Konfigurasi Input Waktu Flatpickr
+        const timeConfig = { enableTime: true, noCalendar: true, dateFormat: "H:i", time_24hr: true, onChange: calculateLogic };
+        flatpickr("#inputJamMasuk", timeConfig);
+        flatpickr("#inputJamKeluar", timeConfig);
+
+        // Inisialisasi FullCalendar
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'id',
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                buttonText: {
+                    today: 'Hari Ini', month: 'Bulan', week: 'Minggu', list: 'List'
+                },
+                events: [],
+                dateClick: function(info) {
+                    // Klik tanggal kosong -> Buka Form Tambah
+                    document.getElementById('inputTanggal').value = info.dateStr;
+                    openModal('create');
+                },
+                eventClick: function(info) {
+                    // Klik Event -> Buka Form Edit
+                    const dataId = info.event.id;
+                    const record = appData.find(d => d.id === dataId);
+                    if(record) openModal('update', record);
+                }
+            });
+            calendar.render();
+            
+            // Tarik data pertama kali
+            loadData();
         });
 
-        // KONFIGURASI URL
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSaDUGUMl_e_TrgGZmGt8d7efN-H_A-gUeXPBS2nw2dKOZAWZz08GT0pxzUqW6aNG7hKMfDRLGYk7S7/pub?gid=112833136&single=true&output=csv';
-        
-        // PENTING: GANTI DENGAN URL WEB APP GOOGLE APPS SCRIPT ANDA
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbKi3sAN2cn0RJEFdn7JxYjWg9vrIm1IGn0R9VYetO8bLSdJsH-HUZBrxAquvnLqnT/exec'; 
+        // -------------------------
+        // FUNGSI KOMUNIKASI SERVER
+        // -------------------------
 
-        // State & DOM Elements
-        const form = document.getElementById('absenForm');
-        const inputNama = document.getElementById('inputNama');
-        const inputTanggal = document.getElementById('inputTanggal');
-        const inputJamMasuk = document.getElementById('inputJamMasuk');
-        const inputJamKeluar = document.getElementById('inputJamKeluar');
-        
-        const summaryHari = document.getElementById('summaryHari');
-        const summaryTotalJam = document.getElementById('summaryTotalJam');
-        const summaryShift = document.getElementById('summaryShift');
-        const summaryLembur = document.getElementById('summaryLembur');
-        const badgeLembur = document.getElementById('badgeLembur');
-        
-        let calculatedData = { hari: '', totalJam: 0, shift: '-', lembur: 0 };
-
-        // Fungsi format waktu ke 24 jam Indonesia (titik)
-        function formatWaktuIndonesia(timeStr) {
-            if (!timeStr || timeStr === '-') return '-';
-            
-            function convertSingle(t) {
-                let text = t.toUpperCase().trim();
-                let isPM = text.includes('PM');
-                let isAM = text.includes('AM');
-                
-                if (isPM || isAM) {
-                    text = text.replace('PM', '').replace('AM', '').trim();
-                    let parts = text.split(/[:.]/);
-                    let h = parseInt(parts[0], 10) || 0;
-                    let m = parts[1] || '00';
-                    
-                    if (isPM && h < 12) h += 12;
-                    if (isAM && h === 12) h = 0;
-                    
-                    return `${h.toString().padStart(2, '0')}.${m}`;
-                }
-                
-                // Jika sudah 24 jam, cukup ubah ":" menjadi "."
-                return text.replace(':', '.');
-            }
-
-            // Memproses jika ada rentang waktu (misal "06.00 PM - 10.00 PM")
-            if (timeStr.includes('-')) {
-                return timeStr.split('-').map(t => convertSingle(t)).join(' - ');
-            }
-            
-            return convertSingle(timeStr);
-        }
-
-        // Hide warning if SCRIPT_URL is set
-        if (SCRIPT_URL) {
-            const warning = document.getElementById('demoWarning');
-            if(warning) warning.classList.add('hidden');
-        }
-
-        // Kalkulasi Otomatis
-        function calculateTime() {
-            const tanggal = inputTanggal.value;
-            const jamMasuk = inputJamMasuk.value;
-            const jamKeluar = inputJamKeluar.value;
-
-            if (tanggal) {
-                const dateObj = new Date(tanggal);
-                const hariArray = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-                calculatedData.hari = hariArray[dateObj.getDay()];
-                summaryHari.textContent = calculatedData.hari;
-            } else {
-                summaryHari.textContent = '-';
-            }
-
-            if (tanggal && jamMasuk && jamKeluar) {
-                const start = new Date(`2000-01-01T${jamMasuk}:00`);
-                let end = new Date(`2000-01-01T${jamKeluar}:00`);
-                
-                // Jika lewat tengah malam
-                if (end < start) {
-                    end.setDate(end.getDate() + 1);
-                }
-
-                const diffHrs = (end - start) / (1000 * 60 * 60);
-
-                // Tentukan Shift
-                const startHour = start.getHours();
-                calculatedData.shift = startHour >= 12 ? 'Middle' : 'Morning';
-
-                // Tentukan Lembur
-                let lembur = 0;
-                if (diffHrs > 8) {
-                    const kelebihan = diffHrs - 8;
-                    if (kelebihan >= 0.5) {
-                        lembur = kelebihan;
-                    }
-                }
-
-                calculatedData.totalJam = diffHrs.toFixed(2);
-                calculatedData.lembur = lembur.toFixed(2);
-
-                // Update UI
-                summaryTotalJam.textContent = calculatedData.totalJam;
-                summaryLembur.textContent = calculatedData.lembur;
-                
-                summaryShift.textContent = calculatedData.shift;
-                summaryShift.className = `px-2 py-1 rounded text-xs font-semibold ${calculatedData.shift === 'Morning' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`;
-
-                if (lembur > 0) badgeLembur.classList.remove('hidden');
-                else badgeLembur.classList.add('hidden');
-
-            } else {
-                summaryTotalJam.textContent = '0';
-                summaryLembur.textContent = '0';
-                summaryShift.textContent = '-';
-                summaryShift.className = 'px-2 py-1 rounded text-xs font-semibold bg-slate-200';
-                badgeLembur.classList.add('hidden');
-            }
-        }
-
-        // Event Listeners untuk form input (Tanggal di-handle oleh flatpickr onChange)
-        inputJamMasuk.addEventListener('input', calculateTime);
-        inputJamKeluar.addEventListener('input', calculateTime);
-
-        // Fetch CSV Data
-        async function fetchCSVData() {
-            const tableBody = document.getElementById('tableBody');
-            const iconRefresh = document.getElementById('iconRefresh');
-            
-            iconRefresh.classList.add('animate-spin');
+        // 1. Mengambil Data (Read)
+        async function loadData() {
+            const iconRef = document.getElementById('iconRefresh');
+            iconRef.classList.add('animate-spin');
             
             try {
-                // Tambahkan random parameter cache-busting agar selalu dapat data terbaru
-                const urlWithCacheBuster = CSV_URL + '&t=' + new Date().getTime();
-                const response = await fetch(urlWithCacheBuster);
-                if (!response.ok) throw new Error('Network error');
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                appData = data;
                 
-                const text = await response.text();
-                const rows = text.split('\n').map(row => row.split(','));
-                
-                // Hapus header
-                const data = rows.slice(1).filter(row => row.length > 1);
-                
-                tableBody.innerHTML = '';
-                
-                if (data.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">Belum ada data</td></tr>`;
-                } else {
-                    data.forEach(row => {
-                        const tgl = row[0] ? row[0].replace(/"/g, '').trim() : '-';
-                        const wktRaw = row[1] ? row[1].replace(/"/g, '').trim() : '-';
-                        const wkt = formatWaktuIndonesia(wktRaw); // Konversi ke format jam Indonesia
-                        const shf = row[2] ? row[2].replace(/"/g, '').trim() : '-';
-
-                        const shiftClass = shf.toLowerCase().includes('morning') ? 'bg-orange-100 text-orange-700' : 
-                                           shf.toLowerCase().includes('middle') ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600';
-
-                        const tr = document.createElement('tr');
-                        tr.className = 'hover:bg-slate-50/80 transition-colors';
-                        tr.innerHTML = `
-                            <td class="px-6 py-3 text-slate-800">${tgl}</td>
-                            <td class="px-6 py-3 text-slate-600">${wkt}</td>
-                            <td class="px-6 py-3">
-                                <span class="px-2.5 py-1 rounded-full text-xs font-medium ${shiftClass}">
-                                    ${shf}
-                                </span>
-                            </td>
-                        `;
-                        tableBody.appendChild(tr);
-                    });
-                }
+                renderTable();
+                renderCalendar();
+                updateStats();
             } catch (err) {
-                console.error(err);
-                tableBody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-red-500">Gagal mengambil data dari Sheet</td></tr>`;
+                console.error("Gagal load data", err);
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal mengambil data. Pastikan SCRIPT_URL benar.</td></tr>`;
             } finally {
-                iconRefresh.classList.remove('animate-spin');
+                iconRef.classList.remove('animate-spin');
             }
         }
 
-        // Submit Data
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // 2. Menyimpan Data (Create / Update)
+        async function saveData() {
+            const btn = document.getElementById('btnSimpan');
+            const txt = document.getElementById('textSimpan');
             
-            const btnSubmit = document.getElementById('btnSubmit');
-            const iconSave = document.getElementById('iconSave');
-            const iconLoading = document.getElementById('iconLoading');
-            const textSubmit = document.getElementById('textSubmit');
-            const msgSuccess = document.getElementById('msgSuccess');
-            const msgError = document.getElementById('msgError');
-
-            // Reset Messages
-            msgSuccess.style.display = 'none';
-            msgError.style.display = 'none';
-
-            // Loading UI
-            btnSubmit.disabled = true;
-            iconSave.classList.add('hidden');
-            iconLoading.classList.remove('hidden');
-            textSubmit.textContent = 'Menyimpan...';
-
-            // Ubah format input jam dari HH:mm menjadi HH.mm (Format Indonesia)
-            const jamMasukID = inputJamMasuk.value.replace(':', '.');
-            const jamKeluarID = inputJamKeluar.value.replace(':', '.');
-
-            const payload = {
-                Nama: inputNama.value,
-                HariTanggal: `${calculatedData.hari}, ${inputTanggal.value}`,
-                Waktu: `${jamMasukID} - ${jamKeluarID}`,
-                TotalJam: calculatedData.totalJam,
-                Shift: calculatedData.shift,
-                Lembur: calculatedData.lembur
-            };
-
-            if (!SCRIPT_URL) {
-                // Simulasi jika belum ada SCRIPT_URL
-                setTimeout(() => {
-                    form.reset();
-                    calculateTime();
-                    
-                    btnSubmit.disabled = false;
-                    iconSave.classList.remove('hidden');
-                    iconLoading.classList.add('hidden');
-                    textSubmit.textContent = 'Simpan Absen';
-                    
-                    msgSuccess.style.display = 'flex';
-                    setTimeout(() => msgSuccess.style.display = 'none', 3000);
-                }, 1000);
+            // Validasi Input
+            const nama = document.getElementById('inputNama').value;
+            const tglRaw = document.getElementById('inputTanggal').value;
+            const jM = document.getElementById('inputJamMasuk').value;
+            const jK = document.getElementById('inputJamKeluar').value;
+            
+            if(!nama || !tglRaw || !jM || !jK) {
+                showStatus('Semua kolom wajib diisi!', 'error');
                 return;
             }
 
+            btn.disabled = true;
+            txt.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Memproses...`;
+            lucide.createIcons();
+
+            const payload = {
+                action: formMode,
+                id: document.getElementById('inputId').value,
+                Nama: nama,
+                TanggalRaw: tglRaw,
+                HariTanggal: `${currentCalc.hari}, ${formatDateID(tglRaw)}`,
+                Waktu: `${jM} - ${jK}`,
+                Shift: currentCalc.shift,
+                Lembur: currentCalc.lembur
+            };
+
             try {
-                // Request no-cors agar tidak terblokir Google
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors', 
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ data: JSON.stringify(payload) })
                 });
-
-                // Sukses
-                // form.reset() tidak secara otomatis membersihkan custom input Flatpickr, jadi kita clear manual
-                form.reset();
-                document.getElementById('inputTanggal')._flatpickr.clear();
-                calculateTime();
                 
-                msgSuccess.style.display = 'flex';
-                setTimeout(() => msgSuccess.style.display = 'none', 3000);
-                
-                // Refresh data CSV setelah berhasil simpan (delay sedikit agar sheet sempat update)
-                setTimeout(fetchCSVData, 1500);
-
+                showStatus('Berhasil disimpan!', 'success');
+                setTimeout(() => { closeModal(); loadData(); }, 1000);
             } catch (err) {
-                console.error(err);
-                msgError.style.display = 'flex';
-                setTimeout(() => msgError.style.display = 'none', 3000);
+                showStatus('Gagal menyimpan ke server', 'error');
             } finally {
-                btnSubmit.disabled = false;
-                iconSave.classList.remove('hidden');
-                iconLoading.classList.add('hidden');
-                textSubmit.textContent = 'Simpan Absen';
+                btn.disabled = false;
+                txt.textContent = 'Simpan';
             }
-        });
+        }
 
-        // Initial Fetch
-        fetchCSVData();
+        // 3. Menghapus Data (Delete)
+        async function deleteData() {
+            if(!confirm('Yakin ingin menghapus data absen ini? Data akan hilang dari Google Sheet.')) return;
+            
+            const btn = document.getElementById('btnHapus');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Menghapus...`;
+            lucide.createIcons();
+            btn.disabled = true;
+
+            const payload = {
+                action: 'delete',
+                id: document.getElementById('inputId').value
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ data: JSON.stringify(payload) })
+                });
+                showStatus('Data terhapus!', 'success');
+                setTimeout(() => { closeModal(); loadData(); }, 1000);
+            } catch (err) {
+                showStatus('Gagal menghapus', 'error');
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        }
+
+
+        // -------------------------
+        // RENDER UI & LOGIC
+        // -------------------------
+
+        function renderCalendar() {
+            calendar.removeAllEvents();
+            const events = appData.map(item => {
+                const shiftColorClass = item.shift.toLowerCase().includes('morning') ? 'fc-event-morning' : 'fc-event-middle';
+                return {
+                    id: item.id,
+                    title: `${item.nama} (${item.jam})`,
+                    start: item.tanggalRaw,
+                    allDay: true,
+                    className: shiftColorClass
+                };
+            });
+            calendar.addEventSource(events);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            if(appData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400">Belum ada data absensi.</td></tr>`;
+                return;
+            }
+
+            // Urutkan dari terbaru ke terlama
+            const sortedData = [...appData].reverse();
+
+            sortedData.forEach(item => {
+                const shiftColor = item.shift.toLowerCase().includes('morning') ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700';
+                const lemburBadge = item.lembur > 0 ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-medium text-xs border border-red-100">${item.lembur} Jam</span>` : '<span class="text-slate-400">-</span>';
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-6 py-3 text-slate-500 text-xs">${item.tanggalInput}</td>
+                    <td class="px-6 py-3 font-medium text-slate-800">${item.nama}</td>
+                    <td class="px-6 py-3 text-slate-600">${item.jadwal}</td>
+                    <td class="px-6 py-3 text-slate-600 font-mono text-sm">${item.jam}</td>
+                    <td class="px-6 py-3"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${shiftColor}">${item.shift}</span></td>
+                    <td class="px-6 py-3">${lemburBadge}</td>
+                    <td class="px-6 py-3 text-center">
+                        <button onclick='editFromTable("${item.id}")' class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors inline-flex"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').innerText = appData.length;
+            const totalLembur = appData.reduce((acc, curr) => acc + parseFloat(curr.lembur || 0), 0);
+            document.getElementById('statLembur').innerText = totalLembur > 0 ? totalLembur + ' Jam' : '-';
+        }
+
+        function editFromTable(id) {
+            const record = appData.find(d => d.id === id);
+            if(record) openModal('update', record);
+        }
+
+        // Kalkulator Shift & Lembur Otomatis
+        function calculateLogic() {
+            const tgl = document.getElementById('inputTanggal').value;
+            const jM = document.getElementById('inputJamMasuk').value;
+            const jK = document.getElementById('inputJamKeluar').value;
+
+            // Cari Nama Hari
+            if(tgl) {
+                const hariArr = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                currentCalc.hari = hariArr[new Date(tgl).getDay()];
+                document.getElementById('calcHari').textContent = currentCalc.hari + ', ' + formatDateID(tgl);
+            }
+
+            if(tgl && jM && jK) {
+                const start = new Date(`2000-01-01T${jM}:00`);
+                let end = new Date(`2000-01-01T${jK}:00`);
+                if (end < start) end.setDate(end.getDate() + 1); // Jika lewat tengah malam
+
+                const diffHrs = (end - start) / (1000 * 60 * 60);
+                
+                // Shift Rule
+                currentCalc.shift = start.getHours() >= 12 ? 'Middle' : 'Morning';
+                
+                // Lembur Rule (> 8 jam)
+                let lembur = 0;
+                if (diffHrs > 8 && (diffHrs - 8) >= 0.5) lembur = diffHrs - 8;
+                currentCalc.lembur = lembur.toFixed(2);
+
+                // Update UI Labels
+                document.getElementById('calcShift').textContent = `Shift: ${currentCalc.shift}`;
+                document.getElementById('calcShift').className = `px-2 py-1 rounded text-xs font-semibold ${currentCalc.shift === 'Morning' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`;
+                
+                if(lembur > 0) {
+                    document.getElementById('calcLembur').textContent = `Lembur: ${currentCalc.lembur} Jam`;
+                    document.getElementById('calcLembur').className = 'px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 border border-red-200';
+                } else {
+                    document.getElementById('calcLembur').textContent = 'Lembur: 0';
+                    document.getElementById('calcLembur').className = 'px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600';
+                }
+            }
+        }
+        document.getElementById('inputTanggal').addEventListener('change', calculateLogic);
+
+        // -------------------------
+        // MODAL HANDLERS
+        // -------------------------
+
+        function openModal(mode, data = null) {
+            formMode = mode;
+            const modal = document.getElementById('formModal');
+            const content = modal.querySelector('.modal-content');
+            const overlay = modal.querySelector('.modal-overlay');
+            const btnHapus = document.getElementById('btnHapus');
+            document.getElementById('statusMsg').classList.add('hidden');
+
+            // Reset Form & UI elements
+            document.getElementById('absenForm').reset();
+            document.getElementById('inputId').value = '';
+            document.getElementById('calcHari').textContent = '-';
+            document.getElementById('calcShift').textContent = 'Shift: -';
+            document.getElementById('calcShift').className = 'px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600';
+            document.getElementById('calcLembur').textContent = 'Lembur: 0 Jam';
+            document.getElementById('calcLembur').className = 'px-2 py-1 rounded text-xs font-semibold bg-slate-200 text-slate-600';
+            
+            if(mode === 'create') {
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500"></i> Tambah Absen';
+                btnHapus.style.display = 'none';
+                
+                // Jika dari click kalender, nilai inputTanggal sudah ada, kita hanya perlu trigger logic
+                if(document.getElementById('inputTanggal').value) calculateLogic(); 
+            } 
+            else if (mode === 'update' && data) {
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="file-edit" class="w-5 h-5 text-indigo-500"></i> Edit / Hapus Absen';
+                btnHapus.style.display = 'flex'; // Munculkan tombol hapus
+                
+                // Isi Form dengan data lama
+                document.getElementById('inputId').value = data.id;
+                document.getElementById('inputNama').value = data.nama;
+                document.getElementById('inputTanggal').value = data.tanggalRaw;
+                
+                const jamArr = data.jam.split(' - ');
+                document.getElementById('inputJamMasuk')._flatpickr.setDate(jamArr[0]);
+                document.getElementById('inputJamKeluar')._flatpickr.setDate(jamArr[1]);
+                
+                calculateLogic(); // Hitung ulang untuk preview visual
+            }
+            lucide.createIcons();
+
+            // Animasi Buka Modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('modal-open');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                content.classList.remove('opacity-0', 'scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('formModal');
+            const content = modal.querySelector('.modal-content');
+            const overlay = modal.querySelector('.modal-overlay');
+            
+            overlay.classList.add('opacity-0');
+            content.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.classList.remove('modal-open');
+            }, 300); // Wait for transition
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('statusMsg');
+            el.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+            
+            if(type === 'success') {
+                el.classList.add('bg-green-100', 'text-green-700');
+                el.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> ${msg}`;
+            } else {
+                el.classList.add('bg-red-100', 'text-red-700');
+                el.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i> ${msg}`;
+            }
+            lucide.createIcons();
+        }
+
+        // Helper Tanggal Indonesia (Contoh: 22 Juni 2026)
+        function formatDateID(dateString) {
+            if(!dateString) return '';
+            const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const d = new Date(dateString);
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
     </script>
 </body>
 </html>
