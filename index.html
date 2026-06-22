@@ -27,8 +27,9 @@
         .fc-event { cursor: pointer; border-radius: 4px; padding: 2px 4px; border: none !important; font-size: 0.8rem; }
         .fc-event-morning { background-color: #ffedd5 !important; color: #c2410c !important; }
         .fc-event-middle { background-color: #dbeafe !important; color: #1d4ed8 !important; }
-        .fc-event-off { background-color: #f1f5f9 !important; color: #475569 !important; }
+        .fc-event-off { background-color: #ef4444 !important; color: #ffffff !important; border: none !important; }
         .fc-event-izin { background-color: #fee2e2 !important; color: #b91c1c !important; }
+        .fc-event-holiday { background-color: #10b981 !important; color: #ffffff !important; border: none !important; pointer-events: none; }
         .fc-list-event { cursor: pointer; }
         
         /* Modal Animation (Support Bottom Sheet on Mobile) */
@@ -280,6 +281,10 @@
                     <label class="block text-sm font-medium text-slate-700 mb-1">Pilih Rentang Tanggal</label>
                     <input type="text" id="inputExportRange" class="w-full px-4 py-3 md:py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-sm shadow-sm" placeholder="Dari Tanggal - Sampai Tanggal">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Foto Karyawan (Opsional)</label>
+                    <input type="file" id="inputFoto" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
                 <div class="flex gap-2 justify-end pt-2">
                     <button onclick="closeExportModal()" class="px-4 py-3 md:py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition-colors">Batal</button>
                     <button onclick="generateReport()" id="btnGenerate" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 md:py-2 text-sm rounded-xl font-medium transition-colors flex items-center gap-2 shadow-sm">
@@ -294,9 +299,12 @@
     <div id="printArea" style="position: absolute; left: -9999px; top: -9999px; width: 850px; background: white; padding: 50px; font-family: 'Segoe UI', Arial, sans-serif; color: black;">
         <div style="display: flex; align-items: center; gap: 40px; margin-bottom: 60px;">
             <!-- Placeholder Pas Foto Berwarna Biru -->
-            <div style="width: 140px; height: 180px; background-color: #0033cc; border: 3px solid black; position: relative; overflow: hidden;">
-                <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 140px; height: 120px; background-color: #e2e8f0; border-radius: 50%;"></div>
-                <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); width: 70px; height: 80px; background-color: #e2e8f0; border-radius: 50%;"></div>
+            <div style="width: 140px; height: 180px; background-color: #0033cc; border: 3px solid black; position: relative; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <img id="printFotoImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+                <div id="printFotoPlaceholder" style="width: 100%; height: 100%; position: relative;">
+                    <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 140px; height: 120px; background-color: #e2e8f0; border-radius: 50%;"></div>
+                    <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); width: 70px; height: 80px; background-color: #e2e8f0; border-radius: 50%;"></div>
+                </div>
             </div>
             <div>
                 <table style="font-size: 18px; font-weight: bold; border: none;">
@@ -319,8 +327,8 @@
                 <tr>
                     <th style="border: 1px solid black; padding: 12px; font-weight: bold;">No</th>
                     <th style="border: 1px solid black; padding: 12px; font-weight: bold;">Date</th>
-                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">IN</th>
-                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">OUT</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold; background-color: darkgreen; color: white;">IN</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold; background-color: red; color: white;">OUT</th>
                     <th style="border: 1px solid black; padding: 12px; font-weight: bold;">Shift</th>
                     <th style="border: 1px solid black; padding: 12px; font-weight: bold;">overtime</th>
                 </tr>
@@ -378,8 +386,22 @@
                 buttonText: {
                     today: 'Hari Ini', month: 'Bulan', list: 'Daftar'
                 },
+                displayEventTime: false,
                 events: [],
                 height: 'auto',
+                eventContent: function(arg) {
+                    if (arg.event.extendedProps.isHoliday) {
+                        return { html: `<div class="p-1 text-center w-full text-white font-bold text-[10px] md:text-xs truncate">${arg.event.title}</div>` };
+                    }
+                    let jam = arg.event.extendedProps.jam || '-';
+                    let shift = arg.event.extendedProps.shift || '-';
+                    return { html: `
+                        <div class="p-0.5 md:p-1 text-center w-full leading-tight overflow-hidden text-white">
+                            <div class="font-bold text-[11px] md:text-sm whitespace-nowrap text-inherit">${jam}</div>
+                            <div class="text-[9px] md:text-[10px] uppercase font-semibold opacity-90 truncate text-inherit">${shift}</div>
+                        </div>
+                    ` };
+                },
                 dateClick: function(info) {
                     document.getElementById('inputTanggal').value = info.dateStr;
                     openModal('create');
@@ -512,7 +534,7 @@
                 let sClass = 'fc-event-middle';
                 const sh = item.shift.toLowerCase();
                 if (sh.includes('morning')) sClass = 'fc-event-morning';
-                else if (sh.includes('off')) sClass = 'fc-event-off';
+                else if (sh.includes('off') || sh.includes('libur')) sClass = 'fc-event-off';
                 else if (sh.includes('izin')) sClass = 'fc-event-izin';
                 
                 const timeLabel = item.jam === '-' ? item.shift : item.jam;
@@ -522,10 +544,33 @@
                     title: `${item.nama} (${timeLabel})`,
                     start: item.tanggalRaw,
                     allDay: true,
-                    className: sClass
+                    className: sClass,
+                    extendedProps: { jam: item.jam, shift: item.shift }
                 };
             });
-            calendar.addEventSource(events);
+
+            // Tambahan Daftar Hari Raya (Nasional & Bali 2026)
+            const holidayEvents = [
+                { title: "Tahun Baru Masehi", start: "2026-01-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Isra Mikraj", start: "2026-02-13", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Tahun Baru Imlek", start: "2026-02-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Hari Raya Nyepi", start: "2026-03-19", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Idul Fitri", start: "2026-03-20", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Idul Fitri", start: "2026-03-21", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Wafat Isa Al Masih", start: "2026-04-03", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Hari Buruh", start: "2026-05-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Kenaikan Isa Al Masih", start: "2026-05-14", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Galungan", start: "2026-05-27", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Hari Raya Waisak", start: "2026-05-31", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Hari Lahir Pancasila", start: "2026-06-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Kuningan", start: "2026-06-06", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Saraswati", start: "2026-07-04", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Kemerdekaan RI", start: "2026-08-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Galungan", start: "2026-12-23", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Hari Raya Natal", start: "2026-12-25", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } }
+            ];
+
+            calendar.addEventSource(events.concat(holidayEvents));
         }
 
         function renderTable() {
@@ -541,10 +586,16 @@
                 let badgeColor = 'bg-blue-100 text-blue-700'; 
                 const sh = item.shift.toLowerCase();
                 if(sh.includes('morning')) badgeColor = 'bg-orange-100 text-orange-700';
-                else if(sh.includes('off')) badgeColor = 'bg-slate-200 text-slate-700';
+                else if(sh.includes('off') || sh.includes('libur')) badgeColor = 'bg-red-600 text-white';
                 else if(sh.includes('izin')) badgeColor = 'bg-red-100 text-red-700';
 
                 const lemburBadge = item.lembur > 0 ? `<span class="bg-red-50 text-red-600 px-2 py-0.5 rounded-md font-medium text-[10px] md:text-xs border border-red-100">${item.lembur} Jam</span>` : '<span class="text-slate-400">-</span>';
+
+                let jamHtml = `<span class="text-slate-600 font-mono text-xs">${item.jam}</span>`;
+                if (item.jam && item.jam.includes(' - ') && !sh.includes('off') && !sh.includes('libur')) {
+                    let jArr = item.jam.split(' - ');
+                    jamHtml = `<span class="bg-emerald-700 text-white px-2 py-0.5 rounded-md font-mono text-xs">${jArr[0]}</span> - <span class="bg-red-600 text-white px-2 py-0.5 rounded-md font-mono text-xs">${jArr[1]}</span>`;
+                }
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50/80 transition-colors';
@@ -552,7 +603,7 @@
                     <td class="px-4 py-3 text-slate-500">${item.tanggalInput.split(' ')[0]}</td>
                     <td class="px-4 py-3 font-medium text-slate-800">${item.nama}</td>
                     <td class="px-4 py-3 text-slate-600">${item.jadwal.split(',')[1] || item.jadwal}</td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">${item.jam}</td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs">${jamHtml}</td>
                     <td class="px-4 py-3"><span class="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-semibold ${badgeColor}">${item.shift}</span></td>
                     <td class="px-4 py-3">${lemburBadge}</td>
                     <td class="px-4 py-3 text-center">
@@ -677,7 +728,7 @@
                 calculateLogic(); 
             } 
             else if (mode === 'update' && data) {
-                document.getElementById('modalTitle').innerHTML = '<i data-lucide="file-edit" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Edit Absensi';
+                document.getElementById('modalTitle').innerHTML = '<i data-lucide="file-text" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Detail / Edit Absensi';
                 btnHapus.style.display = 'flex'; 
                 
                 document.getElementById('inputId').value = data.id;
@@ -755,6 +806,9 @@
             content.classList.add('opacity-0', 'translate-y-full');
             if(!isMobile) content.classList.add('scale-95');
             
+            // Bersihkan input foto saat ditutup
+            document.getElementById('inputFoto').value = "";
+            
             setTimeout(() => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
@@ -817,13 +871,23 @@
                         outTime = "-";
                     }
 
+                    let inStyle = "border: 1px solid black; padding: 10px; text-align: center; background-color: darkgreen; color: white;";
+                    let outStyle = "border: 1px solid black; padding: 10px; text-align: center; background-color: red; color: white;";
+                    let shiftStyle = "border: 1px solid black; padding: 10px;";
+                    
+                    if (item.shift.toLowerCase().includes('off') || item.shift.toLowerCase().includes('libur')) {
+                        shiftStyle += " background-color: red; color: white; font-weight: bold;";
+                        inStyle = "border: 1px solid black; padding: 10px; text-align: center;"; 
+                        outStyle = "border: 1px solid black; padding: 10px; text-align: center;";
+                    }
+
                     pBody.innerHTML += `
                         <tr>
                             <td style="border: 1px solid black; padding: 10px;">${index + 1}</td>
                             <td style="border: 1px solid black; padding: 10px; text-align: left;">${formatDateEn(item.tanggalRaw)}</td>
-                            <td style="border: 1px solid black; padding: 10px;">${inTime}</td>
-                            <td style="border: 1px solid black; padding: 10px;">${outTime}</td>
-                            <td style="border: 1px solid black; padding: 10px;">${item.shift}</td>
+                            <td style="${inStyle}">${inTime}</td>
+                            <td style="${outStyle}">${outTime}</td>
+                            <td style="${shiftStyle}">${item.shift}</td>
                             <td style="border: 1px solid black; padding: 10px;">${item.lembur > 0 ? item.lembur : ''}</td>
                         </tr>
                     `;
@@ -833,18 +897,42 @@
             const printArea = document.getElementById('printArea');
             printArea.style.backgroundColor = "#ffffff"; 
 
-            try {
-                const canvas = await html2canvas(printArea, { scale: 2 });
-                const image = canvas.toDataURL("image/png");
-                const link = document.createElement('a');
-                link.download = `Laporan_Absen_${dates[0]}_to_${dates[1]}.png`;
-                link.href = image;
-                link.click();
-                closeExportModal();
-            } catch (err) {
-                alert("Terjadi kesalahan saat memproses gambar laporan.");
-            } finally {
-                btn.innerHTML = `Download Laporan`;
+            // Logika Penanganan Foto Karyawan
+            const fileInput = document.getElementById('inputFoto');
+            const imgEl = document.getElementById('printFotoImg');
+            const placeholder = document.getElementById('printFotoPlaceholder');
+
+            const doHtml2Canvas = async () => {
+                try {
+                    const canvas = await html2canvas(printArea, { scale: 2 });
+                    const image = canvas.toDataURL("image/png");
+                    const link = document.createElement('a');
+                    link.download = `Laporan_Absen_${dates[0]}_to_${dates[1]}.png`;
+                    link.href = image;
+                    link.click();
+                    closeExportModal();
+                } catch (err) {
+                    alert("Terjadi kesalahan saat memproses gambar laporan.");
+                } finally {
+                    btn.innerHTML = `Download Laporan`;
+                }
+            };
+
+            // Jika ada foto yang diupload, muat foto terlebih dahulu
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imgEl.src = e.target.result;
+                    imgEl.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    // Beri waktu 0.5 detik agar gambar sempat ter-render sebelum dipotong jadi PNG
+                    setTimeout(doHtml2Canvas, 500);
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                imgEl.style.display = 'none';
+                placeholder.style.display = 'block';
+                doHtml2Canvas();
             }
         }
 
