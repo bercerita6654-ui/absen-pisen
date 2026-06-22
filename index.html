@@ -114,11 +114,11 @@
                     <div class="grid grid-cols-2 gap-3 md:gap-4">
                         <div class="bg-slate-50 p-3 md:p-4 rounded-xl border border-slate-100 text-center">
                             <div class="text-xl md:text-2xl font-bold text-slate-800" id="statTotal">-</div>
-                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Total Record</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Record Bulan Ini</div>
                         </div>
                         <div class="bg-slate-50 p-3 md:p-4 rounded-xl border border-slate-100 text-center">
                             <div class="text-xl md:text-2xl font-bold text-red-500" id="statLembur">-</div>
-                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Total Lembur</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 font-medium">Lembur Bulan Ini</div>
                         </div>
                     </div>
                 </div>
@@ -378,17 +378,37 @@
     <script>
         lucide.createIcons();
 
+        // ======= HELPER: Mengubah Desimal (Jam) jadi Teks =======
+        function formatLemburHours(dec) {
+            if (dec <= 0) return '';
+            let h = Math.floor(dec);
+            let m = Math.round((dec - h) * 60);
+            if (m >= 60) {
+                h += Math.floor(m / 60);
+                m = m % 60;
+            }
+            let res = [];
+            if (h > 0) res.push(`${h} Jam`);
+            if (m > 0) res.push(`${m} Menit`);
+            return res.join(' ');
+        }
+
         // ======= HELPER: Cerdas Perbaiki Error Koma/Titik dari Sheet =======
         function parseLemburValue(val) {
             if (!val) return 0;
-            // Ubah koma jadi titik agar bisa diparse sebagai desimal oleh JS
             let dec = parseFloat(String(val).replace(',', '.'));
             if (isNaN(dec)) return 0;
             
-            // Jika desimal hilang (contoh 0.483 menjadi 483 karena locale Sheet), perbaiki
+            // Hanya untuk nilai PER BARIS: jika > 24 pasti error google sheet locale (0.483 jadi 483)
             if (dec > 24) dec = dec / 1000;
             
             return dec;
+        }
+
+        // ======= HELPER: Parse & Format (Khusus Per Baris) =======
+        function formatLemburText(lemburVal) {
+            const dec = parseLemburValue(lemburVal);
+            return formatLemburHours(dec);
         }
 
         // ======= HELPER: Convert AM/PM to 24 Hour Format =======
@@ -419,19 +439,6 @@
                 hours = hours + 12;
             }
             return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-        }
-
-        // ======= HELPER: Format Lembur text (Jam & Menit) =======
-        function formatLemburText(lemburVal) {
-            const dec = parseLemburValue(lemburVal);
-            if (dec <= 0) return '';
-            
-            let h = Math.floor(dec);
-            let m = Math.round((dec - h) * 60);
-            let res = [];
-            if (h > 0) res.push(`${h} Jam`);
-            if (m > 0) res.push(`${m} Menit`);
-            return res.join(' ');
         }
 
         // ======= URL APPS SCRIPT =======
@@ -711,9 +718,20 @@
         }
 
         function updateStats() {
-            document.getElementById('statTotal').innerText = appData.length;
-            const totalLembur = appData.reduce((acc, curr) => acc + parseLemburValue(curr.lembur), 0);
-            document.getElementById('statLembur').innerText = totalLembur > 0 ? formatLemburText(totalLembur) : '-';
+            const now = new Date();
+            const currMonth = now.getMonth();
+            const currYear = now.getFullYear();
+
+            const monthlyData = appData.filter(item => {
+                if(!item.tanggalRaw) return false;
+                const d = new Date(item.tanggalRaw);
+                return d.getMonth() === currMonth && d.getFullYear() === currYear;
+            });
+
+            document.getElementById('statTotal').innerText = monthlyData.length;
+            const totalLembur = monthlyData.reduce((acc, curr) => acc + parseLemburValue(curr.lembur), 0);
+            
+            document.getElementById('statLembur').innerText = totalLembur > 0 ? formatLemburHours(totalLembur) : '-';
         }
 
         function editFromTable(id) {
