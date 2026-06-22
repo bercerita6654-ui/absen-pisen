@@ -410,16 +410,16 @@
             disableMobile: false
         });
 
-        // Init FullCalendar (UI Calendar Event Dipertajam)
+        // Init FullCalendar (Selalu gunakan dayGridMonth agar bisa klik tanggal di HP)
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'id',
-                initialView: isMobile ? 'listWeek' : 'dayGridMonth',
+                initialView: 'dayGridMonth', // Selalu tampilkan format kalender bulanan baik di HP maupun Laptop
                 headerToolbar: {
-                    left: 'prev,next today',
+                    left: isMobile ? 'prev,next' : 'prev,next today', // Di HP tombol 'Hari Ini' dipindah ke kanan agar rapi
                     center: 'title',
-                    right: isMobile ? '' : 'dayGridMonth,listWeek'
+                    right: isMobile ? 'today' : 'dayGridMonth,listWeek' 
                 },
                 buttonText: {
                     today: 'Hari Ini', month: 'Bulan', list: 'Daftar'
