@@ -215,7 +215,7 @@
         lucide.createIcons();
 
         // ======= PENTING: GANTI SCRIPT_URL DENGAN URL APPS SCRIPT ANDA =======
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbKi3sAN2cn0RJEFdn7JxYjWg9vrIm1IGn0R9VYetO8bLSdJsH-HUZBrxAquvnLqnT/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyECb4UynXCF-ndCzdVlOyeXdlJl1AKJhUen9ISUj_kMcaEAP-pre9qcT6yR7NE6eva/exec';
         // =======================================================================
 
         let appData = [];
@@ -280,7 +280,7 @@
                 updateStats();
             } catch (err) {
                 console.error("Gagal load data", err);
-                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal mengambil data. Pastikan SCRIPT_URL benar.</td></tr>`;
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Gagal mengambil data. Pastikan SCRIPT_URL benar dan diatur akses ke "Siapa Saja".</td></tr>`;
             } finally {
                 iconRef.classList.remove('animate-spin');
             }
