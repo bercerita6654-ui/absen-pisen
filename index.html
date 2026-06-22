@@ -53,14 +53,14 @@
         /* Fix for iOS input zoom */
         input, select { font-size: 16px !important; }
 
-        /* Print Area Settings (Untuk Generate PNG/PDF) */
+        /* Print Area Settings */
         #printArea {
-            width: 900px; /* Ukuran asli laporan */
+            width: 900px;
             background: #f8fafc;
             padding: 40px;
             font-family: 'Segoe UI', Arial, sans-serif;
             color: #1e293b;
-            margin: 0 auto;
+            transform-origin: top left; /* Pivot skala wajib di pojok kiri atas */
         }
         
         .print-card {
@@ -308,10 +308,10 @@
         </div>
     </div>
 
-    <!-- MODAL PREVIEW LAPORAN (DIPERBAIKI UNTUK TAMPILAN HANDPHONE) -->
-    <div id="previewModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-3 md:p-6">
+    <!-- MODAL PREVIEW LAPORAN (DIPERBAIKI UNTUK TAMPILAN HANDPHONE & DOWNLOAD) -->
+    <div id="previewModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-2 sm:p-4">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closePreviewModal()"></div>
-        <div class="relative bg-white w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[95vh] scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
+        <div class="relative bg-white w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col h-[95vh] md:max-h-[90vh] scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
 
             <!-- Header Preview -->
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-2xl z-10 shadow-sm shrink-0">
@@ -322,55 +322,58 @@
             </div>
             
             <!-- Area Render & Preview Dinamis -->
-            <div class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 p-2 sm:p-4 flex flex-col items-center">
-                <!-- TEMPLATE LAPORAN -->
-                <div id="printArea" class="shadow-xl transition-transform origin-top">
-                    <div class="print-card">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 30px;">
-                                <div style="width: 135px; height: 180px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 4px solid white; background-color: #f1f5f9; flex-shrink: 0;">
-                                    <img id="printFotoImg" crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1NARBmBx-j4ffaY8089yVSsHDHjs1XQQI" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;" onerror="this.style.display='none';"/>
+            <div id="previewScrollArea" class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 p-4 flex flex-col w-full">
+                <!-- Wrapper Khusus Untuk Isolasi Skala Responsif -->
+                <div id="printAreaWrapper" style="margin: 0 auto; transition: all 0.3s; overflow: visible;">
+                    
+                    <div id="printArea" class="shadow-xl rounded-xl overflow-hidden">
+                        <div class="print-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; text-align: left;">
+                                <div style="display: flex; align-items: center; gap: 30px;">
+                                    <div style="width: 135px; height: 180px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 4px solid white; background-color: #f1f5f9; flex-shrink: 0;">
+                                        <img id="printFotoImg" crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1NARBmBx-j4ffaY8089yVSsHDHjs1XQQI" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;" onerror="this.style.display='none';"/>
+                                    </div>
+                                    <div>
+                                        <h2 style="margin: 0; font-size: 28px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;" id="printName">Yessi Roida</h2>
+                                        <p style="margin: 4px 0 0 0; font-size: 18px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;" id="printPosition">SMD</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h2 style="margin: 0; font-size: 28px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;" id="printName">Yessi Roida</h2>
-                                    <p style="margin: 4px 0 0 0; font-size: 18px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;" id="printPosition">SMD</p>
+                                <div style="text-align: right;">
+                                    <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">ATTENDANCE REPORT</h1>
+                                    <p style="margin: 4px 0 0 0; font-size: 15px; color: #64748b; font-weight: 500;" id="printRange">Periode: -</p>
                                 </div>
                             </div>
-                            <div style="text-align: right;">
-                                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">ATTENDANCE REPORT</h1>
-                                <p style="margin: 4px 0 0 0; font-size: 15px; color: #64748b; font-weight: 500;" id="printRange">Periode: -</p>
-                            </div>
-                        </div>
 
-                        <div style="border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 14px;">
-                                <thead style="background-color: #4f46e5; color: white;">
-                                    <tr>
-                                        <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">No</th>
-                                        <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; text-align: left;">Date</th>
-                                        <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">IN</th>
-                                        <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">OUT</th>
-                                        <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Shift</th>
-                                        <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Overtime</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="printTbody" style="background-color: white;">
-                                    <!-- Data injected via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: right; font-weight: 500;">
-                            Generated on: <span id="printTimestamp"></span>
+                            <div style="border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 14px;">
+                                    <thead style="background-color: #4f46e5; color: white;">
+                                        <tr>
+                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">No</th>
+                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; text-align: left;">Date</th>
+                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">IN</th>
+                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">OUT</th>
+                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Shift</th>
+                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Overtime</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="printTbody" style="background-color: white;">
+                                        <!-- Data injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: right; font-weight: 500;">
+                                Generated on: <span id="printTimestamp"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Footer Preview / Tombol Aksi -->
-            <div class="px-5 py-4 border-t border-slate-100 bg-white rounded-b-2xl flex flex-wrap justify-end gap-2 md:gap-3 z-10 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)] shrink-0">
-                <button onclick="shareWA()" class="bg-[#25D366] hover:bg-[#20b958] text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm w-full sm:w-auto mb-2 sm:mb-0"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim WhatsApp</button>
-                <div class="flex gap-2 md:gap-3 w-full sm:w-auto">
+            <div class="px-4 py-4 border-t border-slate-100 bg-white rounded-b-2xl flex flex-wrap justify-end gap-2 md:gap-3 z-10 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)] shrink-0">
+                <button onclick="shareWA()" class="bg-[#25D366] hover:bg-[#20b958] text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm w-full sm:w-auto mb-1 sm:mb-0"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim WhatsApp</button>
+                <div class="flex gap-2 w-full sm:w-auto">
                     <button onclick="downloadPDF()" id="btnPdf" class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="file-text" class="w-4 h-4"></i> PDF</button>
                     <button onclick="downloadPNG()" id="btnPng" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="image" class="w-4 h-4"></i> Gambar</button>
                 </div>
@@ -390,7 +393,6 @@
         let formMode = 'create'; 
         let currentCalc = { hari: '', totalJam: 0, shift: '-', lembur: 0 };
 
-        // Konfigurasi Pickers
         const isMobile = window.innerWidth < 768;
         
         const timeConfig = { 
@@ -454,7 +456,7 @@
                     } else {
                         document.getElementById('inputTanggal').value = info.dateStr;
                     }
-                    openModal('create');
+                    openModal('create', null, info.dateStr);
                 },
                 eventClick: function(info) {
                     if(info.event.extendedProps.isHoliday) return;
@@ -854,7 +856,6 @@
             }, 300);
         }
 
-        // Penanganan Modal Preview Dibuat Menjadi Centered Modal Standar
         function closePreviewModal() {
             const modal = document.getElementById('previewModal');
             const content = document.getElementById('previewModalContent');
@@ -964,29 +965,30 @@
             previewModal.classList.remove('hidden');
             previewModal.classList.add('flex');
             
-            // Terapkan animasi muncul di tengah (Centered Modal)
+            // LOGIKA RESPONSIVE PREVIEW UNTUK HP TANPA TERPOTONG
             setTimeout(() => {
                 previewModal.querySelector('.absolute').classList.remove('opacity-0');
                 const content = document.getElementById('previewModalContent');
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
                 
-                // LOGIKA RESPONSIVE PREVIEW UNTUK HP
+                const scrollArea = document.getElementById('previewScrollArea');
                 const printArea = document.getElementById('printArea');
-                const container = printArea.parentElement;
-                const availableWidth = container.clientWidth - 32; // Memberi ruang padding
+                const wrapper = document.getElementById('printAreaWrapper');
+                
+                const availableWidth = scrollArea.clientWidth - 32; // Memberi ruang padding
                 
                 if (availableWidth < 900) {
                     const scale = availableWidth / 900;
                     printArea.style.transform = `scale(${scale})`;
-                    printArea.style.transformOrigin = 'top center';
-                    const originalHeight = printArea.offsetHeight;
-                    printArea.style.marginBottom = `-${originalHeight * (1 - scale)}px`;
+                    wrapper.style.width = `${900 * scale}px`;
+                    wrapper.style.height = `${printArea.offsetHeight * scale}px`;
                 } else {
                     printArea.style.transform = 'none';
-                    printArea.style.marginBottom = '0px';
+                    wrapper.style.width = '900px';
+                    wrapper.style.height = `${printArea.offsetHeight}px`;
                 }
-            }, 10);
+            }, 300);
             
             btn.innerHTML = `Buat Preview`;
         }
@@ -999,26 +1001,34 @@
             lucide.createIcons();
             
             const printArea = document.getElementById('printArea');
+            const wrapper = document.getElementById('printAreaWrapper');
             const originalTransform = printArea.style.transform;
-            const originalMargin = printArea.style.marginBottom;
+            const originalWidth = wrapper.style.width;
+            const originalHeight = wrapper.style.height;
             
             try {
-                // Reset ukuran ke dimensi asli agar kualitas gambar tidak rusak saat capture
+                // Kembalikan ukuran asli agar hasil gambar sempurna (HD)
                 printArea.style.transform = 'none';
-                printArea.style.marginBottom = '0px';
+                wrapper.style.width = '900px';
+                wrapper.style.height = `${printArea.offsetHeight}px`;
                 
-                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false });
+                // Beri jeda sepersekian detik agar browser selesai me-render ulang ukuran aslinya
+                await new Promise(r => setTimeout(r, 150)); 
+                
+                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#f8fafc" });
                 const image = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
                 link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.png`;
                 link.href = image;
                 link.click();
             } catch (err) {
-                alert("Terjadi kesalahan saat memproses PNG.");
+                console.error(err);
+                alert("Terjadi kesalahan saat memproses PNG. Coba lagi.");
             } finally {
-                // Mengembalikan ukuran preview responsif untuk layar HP
+                // Kembalikan ukuran preview ke skala HP
                 printArea.style.transform = originalTransform;
-                printArea.style.marginBottom = originalMargin;
+                wrapper.style.width = originalWidth;
+                wrapper.style.height = originalHeight;
                 btn.innerHTML = originalContent;
                 lucide.createIcons();
             }
@@ -1032,15 +1042,21 @@
             lucide.createIcons();
             
             const printArea = document.getElementById('printArea');
+            const wrapper = document.getElementById('printAreaWrapper');
             const originalTransform = printArea.style.transform;
-            const originalMargin = printArea.style.marginBottom;
+            const originalWidth = wrapper.style.width;
+            const originalHeight = wrapper.style.height;
             
             try {
-                // Reset ukuran ke dimensi asli
+                // Kembalikan ukuran asli agar hasil dokumen sempurna (HD)
                 printArea.style.transform = 'none';
-                printArea.style.marginBottom = '0px';
+                wrapper.style.width = '900px';
+                wrapper.style.height = `${printArea.offsetHeight}px`;
                 
-                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false });
+                // Beri jeda sepersekian detik
+                await new Promise(r => setTimeout(r, 150)); 
+                
+                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#f8fafc" });
                 const imgData = canvas.toDataURL("image/png");
                 
                 const { jsPDF } = window.jspdf;
@@ -1051,11 +1067,13 @@
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.pdf`);
             } catch (err) {
-                alert("Terjadi kesalahan saat memproses PDF.");
+                console.error(err);
+                alert("Terjadi kesalahan saat memproses PDF. Coba lagi.");
             } finally {
-                // Mengembalikan ukuran preview
+                // Kembalikan ukuran preview ke skala HP
                 printArea.style.transform = originalTransform;
-                printArea.style.marginBottom = originalMargin;
+                wrapper.style.width = originalWidth;
+                wrapper.style.height = originalHeight;
                 btn.innerHTML = originalContent;
                 lucide.createIcons();
             }
