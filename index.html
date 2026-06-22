@@ -25,12 +25,23 @@
         .fc-button-primary { background-color: #4f46e5 !important; border-color: #4f46e5 !important; transition: all 0.2s; text-transform: capitalize; }
         .fc-button-primary:hover { background-color: #4338ca !important; border-color: #4338ca !important; }
         .fc-event { cursor: pointer; border-radius: 4px; padding: 2px 4px; border: none !important; font-size: 0.8rem; }
+        
+        /* Warna Shift & Event */
         .fc-event-morning { background-color: #ffedd5 !important; color: #c2410c !important; }
         .fc-event-middle { background-color: #dbeafe !important; color: #1d4ed8 !important; }
         .fc-event-off { background-color: #ef4444 !important; color: #ffffff !important; border: none !important; }
         .fc-event-izin { background-color: #fee2e2 !important; color: #b91c1c !important; }
         .fc-event-holiday { background-color: #10b981 !important; color: #ffffff !important; border: none !important; pointer-events: none; }
         .fc-list-event { cursor: pointer; }
+
+        /* HARI MINGGU BERWARNA MERAH */
+        .fc-day-sun .fc-col-header-cell-cushion, 
+        .fc-day-sun .fc-daygrid-day-number,
+        .fc-list-day.fc-day-sun .fc-list-day-text,
+        .fc-list-day.fc-day-sun .fc-list-day-side-text {
+            color: #ef4444 !important; /* Warna Merah Tailwind */
+            font-weight: bold !important;
+        }
         
         /* Modal Animation (Support Bottom Sheet on Mobile) */
         .modal-open { overflow: hidden; }
@@ -359,7 +370,7 @@
             dateFormat: "H:i", 
             time_24hr: true, 
             onChange: calculateLogic,
-            disableMobile: false // Biarkan HP menggunakan pemilih jam native bawaan HP yang lebih mudah
+            disableMobile: false
         };
         flatpickr("#inputJamMasuk", timeConfig);
         flatpickr("#inputJamKeluar", timeConfig);
@@ -407,6 +418,7 @@
                     openModal('create');
                 },
                 eventClick: function(info) {
+                    if(info.event.extendedProps.isHoliday) return; // Abaikan jika diklik hari libur nasional
                     const record = appData.find(d => d.id === info.event.id);
                     if(record) openModal('update', record);
                 }
@@ -549,24 +561,26 @@
                 };
             });
 
-            // Tambahan Daftar Hari Raya (Nasional & Bali 2026)
+            // DAFTAR HARI RAYA NASIONAL & LOKAL BALI (2026)
             const holidayEvents = [
                 { title: "Tahun Baru Masehi", start: "2026-01-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
-                { title: "Isra Mikraj", start: "2026-02-13", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Tahun Baru Imlek", start: "2026-02-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Isra Mikraj", start: "2026-02-18", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Hari Raya Nyepi", start: "2026-03-19", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Idul Fitri", start: "2026-03-20", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Idul Fitri", start: "2026-03-21", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Wafat Isa Al Masih", start: "2026-04-03", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Hari Buruh", start: "2026-05-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Kenaikan Isa Al Masih", start: "2026-05-14", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
-                { title: "Galungan", start: "2026-05-27", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Idul Adha", start: "2026-05-27", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Hari Raya Waisak", start: "2026-05-31", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Hari Lahir Pancasila", start: "2026-06-01", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
-                { title: "Kuningan", start: "2026-06-06", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
-                { title: "Saraswati", start: "2026-07-04", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Galungan", start: "2026-06-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Tahun Baru Islam", start: "2026-06-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Kuningan", start: "2026-06-27", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Kemerdekaan RI", start: "2026-08-17", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
-                { title: "Galungan", start: "2026-12-23", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Maulid Nabi", start: "2026-08-26", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
+                { title: "Saraswati", start: "2026-11-21", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } },
                 { title: "Hari Raya Natal", start: "2026-12-25", className: "fc-event-holiday", allDay: true, extendedProps: { isHoliday: true } }
             ];
 
