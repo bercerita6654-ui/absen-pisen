@@ -447,14 +447,7 @@
                     ` };
                 },
                 dateClick: function(info) {
-                    // Update field Flatpickr saat tanggal diklik
-                    const fp = document.getElementById('inputTanggal')._flatpickr;
-                    if(fp) {
-                        fp.setDate(info.dateStr);
-                    } else {
-                        document.getElementById('inputTanggal').value = info.dateStr;
-                    }
-                    openModal('create');
+                    openModal('create', null, info.dateStr);
                 },
                 eventClick: function(info) {
                     if(info.event.extendedProps.isHoliday) return;
@@ -743,7 +736,7 @@
         // -------------------------
         // MODAL HANDLERS
         // -------------------------
-        function openModal(mode, data = null) {
+        function openModal(mode, data = null, selectedDate = null) {
             formMode = mode;
             const modal = document.getElementById('formModal');
             const btnHapus = document.getElementById('btnHapus');
@@ -760,13 +753,14 @@
                 document.getElementById('modalTitle').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5 md:w-6 md:h-6 text-indigo-500"></i> Input Absensi';
                 btnHapus.style.display = 'none';
                 
-                // Pastikan flatpickr diset ke hari ini jika kosong
-                if(!document.getElementById('inputTanggal').value) {
-                    const today = new Date().toISOString().split('T')[0];
-                    const fp = document.getElementById('inputTanggal')._flatpickr;
-                    if(fp) fp.setDate(today);
-                    else document.getElementById('inputTanggal').value = today;
-                }
+                // Set tanggal sesuai dengan yang diklik di kalender, atau hari ini jika dari tombol "Input Absen"
+                const today = new Date().toISOString().split('T')[0];
+                const targetDate = selectedDate || today;
+                
+                const fp = document.getElementById('inputTanggal')._flatpickr;
+                if(fp) fp.setDate(targetDate);
+                else document.getElementById('inputTanggal').value = targetDate;
+                
                 calculateLogic(); 
             } 
             else if (mode === 'update' && data) {
