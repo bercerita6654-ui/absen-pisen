@@ -489,17 +489,17 @@
                 height: 'auto',
                 eventContent: function(arg) {
                     if (arg.event.extendedProps.isHoliday) {
-                        return { html: `<div class="p-1 text-center w-full text-white font-bold text-[10px] md:text-xs truncate shadow-sm rounded">${arg.event.title}</div>` };
+                        return { html: `<div class="p-1 text-center w-full text-white font-bold text-[9px] md:text-xs truncate shadow-sm rounded">${arg.event.title}</div>` };
                     }
                     let jam = arg.event.extendedProps.jam || '-';
                     let shift = arg.event.extendedProps.shift || '-';
                     
                     return { html: `
-                        <div style="padding: 3px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-                            <div style="background-color: white; color: #1e293b; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); width: 100%; text-align: center; margin-bottom: 3px; letter-spacing: 0.5px;">
+                        <div style="padding: 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; box-sizing: border-box; overflow: hidden;">
+                            <div style="background-color: white; color: #1e293b; font-weight: 800; font-size: 0.65rem; padding: 2px 1px; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); width: 100%; text-align: center; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
                                 ${jam}
                             </div>
-                            <div style="color: white; font-weight: 800; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); width: 100%; text-align: center; overflow: hidden; text-overflow: ellipsis;">
+                            <div style="color: white; font-weight: 800; font-size: 0.55rem; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-sizing: border-box;">
                                 ${shift}
                             </div>
                         </div>
@@ -1106,19 +1106,36 @@
                 wrapper.style.width = '1080px';
                 wrapper.style.height = `${printArea.offsetHeight}px`;
                 
-                // Jeda agar browser selesai merefresh ukuran visualnya sebelum difoto
-                await new Promise(r => setTimeout(r, 200)); 
+                // Jeda agar browser selesai merefresh ukuran visualnya sebelum difoto (HP butuh waktu lebih)
+                await new Promise(r => setTimeout(r, 350)); 
                 
-                // Ekspor ke JPG (image/jpeg) dengan kualitas 100% (1.0)
-                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff" });
-                const image = canvas.toDataURL("image/jpeg", 1.0);
-                const link = document.createElement('a');
-                link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.jpg`;
-                link.href = image;
-                link.click();
+                // Turunkan sedikit scale di HP (1.5) agar memori RAM HP tidak crash
+                const captureScale = isMobile ? 1.5 : 2;
+                
+                const canvas = await html2canvas(printArea, { 
+                    scale: captureScale, 
+                    useCORS: true, 
+                    allowTaint: false, 
+                    backgroundColor: "#ffffff" 
+                });
+                
+                // Gunakan sistem Blob (bukan DataURL) agar tidak gagal / crash di HP
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.jpg`;
+                    link.href = url;
+                    
+                    // Wajib di-append ke body agar diizinkan oleh iOS Safari & Chrome Android
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, "image/jpeg", 0.95); // Format JPEG dengan Kualitas 95%
+
             } catch (err) {
                 console.error(err);
-                alert("Terjadi kesalahan saat memproses JPG. Coba lagi.");
+                alert("Terjadi kesalahan saat memproses JPG. Pastikan ruang memori HP cukup.");
             } finally {
                 // Kembalikan ke skala HP setelah selesai
                 updatePreviewScale();
@@ -1146,18 +1163,39 @@
                 wrapper.style.width = '1080px';
                 wrapper.style.height = `${printArea.offsetHeight}px`;
                 
-                await new Promise(r => setTimeout(r, 200)); 
+                await new Promise(r => setTimeout(r, 350)); 
                 
-                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff" });
-                const imgData = canvas.toDataURL("image/png");
+                const captureScale = isMobile ? 1.5 : 2;
+
+                const canvas = await html2canvas(printArea, { 
+                    scale: captureScale, 
+                    useCORS: true, 
+                    allowTaint: false, 
+                    backgroundColor: "#ffffff" 
+                });
+                
+                // Gunakan format JPEG kompresi tinggi untuk PDF agar PDF tidak berat saat dikirim WA
+                const imgData = canvas.toDataURL("image/jpeg", 0.85);
                 
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.pdf`);
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                
+                // Ekspor dengan Blob Object untuk HP
+                const pdfBlob = pdf.output('blob');
+                const url = URL.createObjectURL(pdfBlob);
+                const link = document.createElement('a');
+                link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.pdf`;
+                link.href = url;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
             } catch (err) {
                 console.error(err);
                 alert("Terjadi kesalahan saat memproses PDF. Coba lagi.");
