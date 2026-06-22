@@ -351,7 +351,7 @@
                 <button onclick="shareWA()" class="bg-[#25D366] hover:bg-[#20b958] text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm w-full sm:w-auto mb-1 sm:mb-0"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim WhatsApp</button>
                 <div class="flex gap-2 w-full sm:w-auto">
                     <button onclick="downloadPDF()" id="btnPdf" class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="file-text" class="w-4 h-4"></i> PDF</button>
-                    <button onclick="downloadPNG()" id="btnPng" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="image" class="w-4 h-4"></i> Gambar</button>
+                    <button onclick="downloadJPG()" id="btnJpg" class="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-5 py-3 md:py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"><i data-lucide="image" class="w-4 h-4"></i> Simpan Gambar</button>
                 </div>
             </div>
         </div>
@@ -980,15 +980,18 @@
             btn.innerHTML = `Buat Preview`;
         }
 
-        // AKSI DOWNLOAD PNG DARI PREVIEW
-        async function downloadPNG() {
-            const btn = document.getElementById('btnPng');
+        // AKSI DOWNLOAD JPG DARI PREVIEW
+        async function downloadJPG() {
+            const btn = document.getElementById('btnJpg');
             const originalContent = btn.innerHTML;
             btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Proses...`;
             lucide.createIcons();
             
             const printArea = document.getElementById('printArea');
             const wrapper = document.getElementById('printAreaWrapper');
+            const originalTransform = printArea.style.transform;
+            const originalWidth = wrapper.style.width;
+            const originalHeight = wrapper.style.height;
             
             try {
                 // Kembalikan ukuran asli (1080x1350) agar hasil jernih HD
@@ -999,15 +1002,16 @@
                 // Jeda agar browser selesai merefresh ukuran visualnya sebelum difoto
                 await new Promise(r => setTimeout(r, 200)); 
                 
+                // Ekspor ke JPG (image/jpeg) dengan kualitas 100% (1.0)
                 const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff" });
-                const image = canvas.toDataURL("image/png");
+                const image = canvas.toDataURL("image/jpeg", 1.0);
                 const link = document.createElement('a');
-                link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.png`;
+                link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.jpg`;
                 link.href = image;
                 link.click();
             } catch (err) {
                 console.error(err);
-                alert("Terjadi kesalahan saat memproses PNG. Coba lagi.");
+                alert("Terjadi kesalahan saat memproses JPG. Coba lagi.");
             } finally {
                 // Kembalikan ke skala HP setelah selesai
                 updatePreviewScale();
