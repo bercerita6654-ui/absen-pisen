@@ -291,27 +291,43 @@
     </div>
 
     <!-- TEMPLATE LAPORAN TERSEMBUNYI (UNTUK DIUBAH KE PNG) -->
-    <div id="printArea">
-        <div class="text-center mb-6 border-b-2 border-slate-200 pb-4">
-            <h1 class="text-2xl font-bold text-indigo-700">LAPORAN ABSENSI KARYAWAN</h1>
-            <p class="text-slate-600 mt-1" id="printRange">Periode: -</p>
+    <div id="printArea" style="position: absolute; left: -9999px; top: -9999px; width: 850px; background: white; padding: 50px; font-family: 'Segoe UI', Arial, sans-serif; color: black;">
+        <div style="display: flex; align-items: center; gap: 40px; margin-bottom: 60px;">
+            <!-- Placeholder Pas Foto Berwarna Biru -->
+            <div style="width: 140px; height: 180px; background-color: #0033cc; border: 3px solid black; position: relative; overflow: hidden;">
+                <div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); width: 140px; height: 120px; background-color: #e2e8f0; border-radius: 50%;"></div>
+                <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); width: 70px; height: 80px; background-color: #e2e8f0; border-radius: 50%;"></div>
+            </div>
+            <div>
+                <table style="font-size: 18px; font-weight: bold; border: none;">
+                    <tr>
+                        <td style="padding-bottom: 20px; width: 120px;">Name</td>
+                        <td style="padding-bottom: 20px; width: 30px;">:</td>
+                        <td style="padding-bottom: 20px;" id="printName">Yessi Roida</td>
+                    </tr>
+                    <tr>
+                        <td>Position</td>
+                        <td>:</td>
+                        <td id="printPosition">SMD</td>
+                    </tr>
+                </table>
+            </div>
         </div>
-        <table class="w-full text-left text-sm border-collapse border border-slate-300">
+
+        <table style="width: 100%; border-collapse: collapse; text-align: center; border: 1px solid black; font-size: 15px;">
             <thead>
-                <tr class="bg-slate-100">
-                    <th class="border border-slate-300 px-4 py-2">Nama Karyawan</th>
-                    <th class="border border-slate-300 px-4 py-2">Tanggal Absen</th>
-                    <th class="border border-slate-300 px-4 py-2">Jam Masuk - Keluar</th>
-                    <th class="border border-slate-300 px-4 py-2">Shift / Tipe</th>
-                    <th class="border border-slate-300 px-4 py-2">Lembur</th>
+                <tr>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">No</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">Date</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">IN</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">OUT</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">Shift</th>
+                    <th style="border: 1px solid black; padding: 12px; font-weight: bold;">overtime</th>
                 </tr>
             </thead>
             <tbody id="printTbody">
             </tbody>
         </table>
-        <div class="mt-6 text-xs text-slate-400 text-right">
-            Digenerate pada: <span id="printTimestamp"></span>
-        </div>
     </div>
 
     <!-- LOGIC PROGRAM -->
@@ -602,7 +618,9 @@
                 if (end < start) end.setDate(end.getDate() + 1); 
 
                 const diffHrs = (end - start) / (1000 * 60 * 60);
-                currentCalc.shift = start.getHours() >= 12 ? 'Middle' : 'Morning';
+                
+                // Aturan Shift baru: Mulai jam 11 ke atas = Middle, di bawah 11 = Morning
+                currentCalc.shift = start.getHours() >= 11 ? 'Middle' : 'Morning';
                 
                 let lembur = 0;
                 if (diffHrs > 8 && (diffHrs - 8) >= 0.5) lembur = diffHrs - 8;
@@ -743,6 +761,15 @@
             }, 300);
         }
 
+        // Format Tanggal Inggris untuk Laporan (Contoh: Wednesday, 10 June 2026)
+        function formatDateEn(dateString) {
+            if(!dateString) return '';
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const d = new Date(dateString);
+            return `${days[d.getDay()]}, ${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
         async function generateReport() {
             const rangeStr = document.getElementById('inputExportRange').value;
             if(!rangeStr || !rangeStr.includes(' to ')) {
@@ -764,24 +791,40 @@
                 return curr >= startD && curr <= endD;
             });
 
-            document.getElementById('printRange').innerText = `Periode: ${formatDateID(dates[0])} s.d. ${formatDateID(dates[1])}`;
-            document.getElementById('printTimestamp').innerText = new Date().toLocaleString('id-ID');
+            // Ambil Nama & Posisi berdasarkan data terakhir yang disave
+            const savedNameFull = localStorage.getItem('savedNamaAbsen') || 'Yessi Roida - SMD';
+            const nameParts = savedNameFull.split('-');
+            document.getElementById('printName').innerText = nameParts[0].trim();
+            document.getElementById('printPosition').innerText = nameParts.length > 1 ? nameParts[1].trim() : 'SMD';
             
             const pBody = document.getElementById('printTbody');
             pBody.innerHTML = '';
             
             if(filtered.length === 0) {
-                pBody.innerHTML = `<tr><td colspan="5" class="border border-slate-300 px-4 py-8 text-center text-slate-500">Tidak ada data pada periode ini</td></tr>`;
+                pBody.innerHTML = `<tr><td colspan="6" style="border: 1px solid black; padding: 15px; text-align: center;">Tidak ada data pada periode ini</td></tr>`;
             } else {
                 filtered.sort((a,b) => new Date(a.tanggalRaw) - new Date(b.tanggalRaw));
-                filtered.forEach(item => {
+                filtered.forEach((item, index) => {
+                    let inTime = "";
+                    let outTime = "";
+                    
+                    if (item.jam && item.jam.includes(' - ')) {
+                        let jArr = item.jam.split(' - ');
+                        inTime = jArr[0];
+                        outTime = jArr[1];
+                    } else {
+                        inTime = "-";
+                        outTime = "-";
+                    }
+
                     pBody.innerHTML += `
                         <tr>
-                            <td class="border border-slate-300 px-4 py-2 font-medium">${item.nama}</td>
-                            <td class="border border-slate-300 px-4 py-2">${item.jadwal}</td>
-                            <td class="border border-slate-300 px-4 py-2 text-center">${item.jam}</td>
-                            <td class="border border-slate-300 px-4 py-2 text-center">${item.shift}</td>
-                            <td class="border border-slate-300 px-4 py-2 text-center">${item.lembur > 0 ? item.lembur + ' Jam' : '-'}</td>
+                            <td style="border: 1px solid black; padding: 10px;">${index + 1}</td>
+                            <td style="border: 1px solid black; padding: 10px; text-align: left;">${formatDateEn(item.tanggalRaw)}</td>
+                            <td style="border: 1px solid black; padding: 10px;">${inTime}</td>
+                            <td style="border: 1px solid black; padding: 10px;">${outTime}</td>
+                            <td style="border: 1px solid black; padding: 10px;">${item.shift}</td>
+                            <td style="border: 1px solid black; padding: 10px;">${item.lembur > 0 ? item.lembur : ''}</td>
                         </tr>
                     `;
                 });
