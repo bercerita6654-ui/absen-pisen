@@ -55,7 +55,7 @@
 
         /* Print Area Settings (Untuk Generate PNG/PDF) */
         #printArea {
-            width: 900px;
+            width: 900px; /* Ukuran asli laporan */
             background: #f8fafc;
             padding: 40px;
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -320,9 +320,10 @@
                 <button onclick="closePreviewModal()" class="p-2 -mr-2 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
-            <div class="flex-1 overflow-auto bg-slate-200 p-4 text-center">
+            <!-- Area Render & Preview Dinamis -->
+            <div class="flex-1 overflow-auto bg-slate-200 p-2 sm:p-4 flex flex-col items-center">
                 <!-- TEMPLATE LAPORAN TERSEMBUNYI DIPINDAHKAN KESINI UNTUK PREVIEW -->
-                <div id="printArea" class="inline-block origin-top scale-[0.35] min-[400px]:scale-[0.45] sm:scale-[0.6] md:scale-[0.8] lg:scale-100 shadow-xl transition-transform">
+                <div id="printArea" class="shadow-xl transition-transform origin-top">
                     <div class="print-card">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; text-align: left;">
                             <div style="display: flex; align-items: center; gap: 30px;">
@@ -962,6 +963,26 @@
             previewModal.classList.remove('hidden');
             previewModal.classList.add('flex');
             
+            // LOGIKA RESPONSIVE PREVIEW UNTUK HP
+            setTimeout(() => {
+                const printArea = document.getElementById('printArea');
+                const container = printArea.parentElement;
+                const availableWidth = container.clientWidth - 32; // padding 16px x 2
+                
+                if (availableWidth < 900) {
+                    const scale = availableWidth / 900;
+                    printArea.style.transform = `scale(${scale})`;
+                    printArea.style.transformOrigin = 'top center';
+                    
+                    // Hitung tinggi asli dan hapus spasi kosong di bawah akibat scale
+                    const originalHeight = printArea.offsetHeight;
+                    printArea.style.marginBottom = `-${originalHeight * (1 - scale)}px`;
+                } else {
+                    printArea.style.transform = 'none';
+                    printArea.style.marginBottom = '0px';
+                }
+            }, 50);
+            
             btn.innerHTML = `Buat Preview`;
         }
 
@@ -973,9 +994,13 @@
             lucide.createIcons();
             
             const printArea = document.getElementById('printArea');
+            const originalTransform = printArea.style.transform;
+            const originalMargin = printArea.style.marginBottom;
+            
             try {
-                // Menghilangkan skala sementara agar canvas di-render HD
-                printArea.classList.remove('scale-[0.35]', 'min-[400px]:scale-[0.45]', 'sm:scale-[0.6]', 'md:scale-[0.8]', 'lg:scale-100');
+                // Reset ukuran ke dimensi asli agar kualitas gambar tidak rusak saat capture
+                printArea.style.transform = 'none';
+                printArea.style.marginBottom = '0px';
                 
                 const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false });
                 const image = canvas.toDataURL("image/png");
@@ -986,8 +1011,9 @@
             } catch (err) {
                 alert("Terjadi kesalahan saat memproses PNG.");
             } finally {
-                // Mengembalikan skala Preview Responsive
-                printArea.classList.add('scale-[0.35]', 'min-[400px]:scale-[0.45]', 'sm:scale-[0.6]', 'md:scale-[0.8]', 'lg:scale-100');
+                // Mengembalikan ukuran preview responsif untuk layar HP
+                printArea.style.transform = originalTransform;
+                printArea.style.marginBottom = originalMargin;
                 btn.innerHTML = originalContent;
                 lucide.createIcons();
             }
@@ -1001,8 +1027,13 @@
             lucide.createIcons();
             
             const printArea = document.getElementById('printArea');
+            const originalTransform = printArea.style.transform;
+            const originalMargin = printArea.style.marginBottom;
+            
             try {
-                printArea.classList.remove('scale-[0.35]', 'min-[400px]:scale-[0.45]', 'sm:scale-[0.6]', 'md:scale-[0.8]', 'lg:scale-100');
+                // Reset ukuran ke dimensi asli
+                printArea.style.transform = 'none';
+                printArea.style.marginBottom = '0px';
                 
                 const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false });
                 const imgData = canvas.toDataURL("image/png");
@@ -1017,7 +1048,9 @@
             } catch (err) {
                 alert("Terjadi kesalahan saat memproses PDF.");
             } finally {
-                printArea.classList.add('scale-[0.35]', 'min-[400px]:scale-[0.45]', 'sm:scale-[0.6]', 'md:scale-[0.8]', 'lg:scale-100');
+                // Mengembalikan ukuran preview
+                printArea.style.transform = originalTransform;
+                printArea.style.marginBottom = originalMargin;
                 btn.innerHTML = originalContent;
                 lucide.createIcons();
             }
