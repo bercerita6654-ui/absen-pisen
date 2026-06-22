@@ -29,10 +29,10 @@
         
         /* WARNA SHIFT & EVENT YANG DIPERTAJAM */
         .fc-event { cursor: pointer; border-radius: 6px; padding: 2px; border: none !important; font-size: 0.8rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .fc-event-morning { background-color: #f97316 !important; color: #ffffff !important; } /* Orange Solid */
-        .fc-event-middle { background-color: #2563eb !important; color: #ffffff !important; } /* Blue Solid */
-        .fc-event-off { background-color: #ef4444 !important; color: #ffffff !important; border: none !important; } /* Red Solid */
-        .fc-event-izin { background-color: #eab308 !important; color: #ffffff !important; border: none !important; } /* Yellow Solid */
+        .fc-event-morning { background-color: #f97316 !important; color: #ffffff !important; } 
+        .fc-event-middle { background-color: #2563eb !important; color: #ffffff !important; } 
+        .fc-event-off { background-color: #ef4444 !important; color: #ffffff !important; border: none !important; } 
+        .fc-event-izin { background-color: #eab308 !important; color: #ffffff !important; border: none !important; } 
         .fc-event-holiday { background-color: #10b981 !important; color: #ffffff !important; border: none !important; pointer-events: none; }
         .fc-list-event { cursor: pointer; }
 
@@ -41,7 +41,7 @@
         .fc-day-sun .fc-daygrid-day-number,
         .fc-list-day.fc-day-sun .fc-list-day-text,
         .fc-list-day.fc-day-sun .fc-list-day-side-text {
-            color: #ef4444 !important; /* Warna Merah Tailwind */
+            color: #ef4444 !important; 
             font-weight: bold !important;
         }
         
@@ -52,23 +52,6 @@
         
         /* Fix for iOS input zoom */
         input, select { font-size: 16px !important; }
-
-        /* Print Area Settings */
-        #printArea {
-            width: 900px;
-            background: #f8fafc;
-            padding: 40px;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            color: #1e293b;
-            transform-origin: top left; /* Pivot skala wajib di pojok kiri atas */
-        }
-        
-        .print-card {
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20 md:pb-10 overflow-x-hidden">
@@ -179,13 +162,9 @@
 
     <!-- MODAL FORM (ADD / EDIT) - BOTTOM SHEET ON MOBILE -->
     <div id="formModal" class="fixed inset-0 z-50 hidden items-end md:items-center justify-center">
-        <!-- Overlay -->
         <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm modal-overlay opacity-0 transition-opacity duration-300" onclick="closeModal()"></div>
-        
-        <!-- Content -->
         <div class="relative bg-white w-full max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl modal-content opacity-0 translate-y-full md:translate-y-0 md:scale-95 flex flex-col max-h-[92vh] md:max-h-[90vh] transition-all duration-300">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-1 md:hidden shrink-0"></div>
-            
             <div class="px-5 md:px-6 py-3 md:py-4 border-b border-slate-100 flex justify-between items-center shrink-0">
                 <h3 id="modalTitle" class="text-lg md:text-xl font-bold text-slate-800 flex items-center gap-2">
                     <i data-lucide="file-edit" class="w-5 h-5 text-indigo-500"></i> Input Absensi
@@ -214,7 +193,6 @@
                         </div>
                     </div>
 
-                    <!-- Tipe Kehadiran -->
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Tipe Kehadiran</label>
                         <select id="inputTipe" onchange="toggleTipeAbsen()" class="w-full px-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm appearance-none">
@@ -224,7 +202,6 @@
                         </select>
                     </div>
 
-                    <!-- Keterangan Izin -->
                     <div id="divKeterangan" class="hidden">
                         <label class="block text-sm font-medium text-slate-700 mb-1">Keterangan Izin</label>
                         <select id="inputKeterangan" onchange="calculateLogic()" class="w-full px-4 py-3 md:py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm appearance-none">
@@ -235,7 +212,6 @@
                         </select>
                     </div>
 
-                    <!-- Jam Masuk & Keluar -->
                     <div id="divWaktu" class="grid grid-cols-1 sm:grid-cols-2 gap-4 transition-all">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Jam Masuk</label>
@@ -253,7 +229,6 @@
                         </div>
                     </div>
 
-                    <!-- Otomatis Kalkulasi -->
                     <div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 mt-2">
                         <div class="flex justify-between items-center text-xs md:text-sm mb-2">
                             <span class="text-slate-500 font-medium">Kalkulasi Sistem:</span>
@@ -264,10 +239,7 @@
                             <span id="calcLembur" class="px-2 py-1 rounded-md text-[11px] md:text-xs font-semibold bg-slate-200 text-slate-600">Lembur: 0 Jam</span>
                         </div>
                     </div>
-
-                    <!-- Notifikasi Status -->
                     <div id="statusMsg" class="hidden p-3 rounded-xl text-sm flex items-center gap-2 font-medium"></div>
-
                 </form>
             </div>
             
@@ -308,7 +280,7 @@
         </div>
     </div>
 
-    <!-- MODAL PREVIEW LAPORAN (DIPERBAIKI UNTUK TAMPILAN HANDPHONE & DOWNLOAD) -->
+    <!-- MODAL PREVIEW LAPORAN (INTERAKTIF & RESPONSIVE SCALING) -->
     <div id="previewModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-2 sm:p-4">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closePreviewModal()"></div>
         <div class="relative bg-white w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col h-[95vh] md:max-h-[90vh] scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
@@ -322,49 +294,53 @@
             </div>
             
             <!-- Area Render & Preview Dinamis -->
-            <div id="previewScrollArea" class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 p-4 flex flex-col w-full">
+            <div id="previewScrollArea" class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-200 p-4 flex flex-col w-full relative">
                 <!-- Wrapper Khusus Untuk Isolasi Skala Responsif -->
-                <div id="printAreaWrapper" style="margin: 0 auto; transition: all 0.3s; overflow: visible;">
+                <div id="printAreaWrapper" style="margin: 0 auto; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: white;">
                     
-                    <div id="printArea" class="shadow-xl rounded-xl overflow-hidden">
-                        <div class="print-card">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; text-align: left;">
-                                <div style="display: flex; align-items: center; gap: 30px;">
-                                    <div style="width: 135px; height: 180px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 4px solid white; background-color: #f1f5f9; flex-shrink: 0;">
-                                        <img id="printFotoImg" crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1NARBmBx-j4ffaY8089yVSsHDHjs1XQQI" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;" onerror="this.style.display='none';"/>
-                                    </div>
-                                    <div>
-                                        <h2 style="margin: 0; font-size: 28px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;" id="printName">Yessi Roida</h2>
-                                        <p style="margin: 4px 0 0 0; font-size: 18px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;" id="printPosition">SMD</p>
-                                    </div>
+                    <!-- AREA DOKUMEN 4:5 (1080x1350) -->
+                    <div id="printArea" style="width: 1080px; min-height: 1350px; background: #ffffff; padding: 60px; font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; box-sizing: border-box; display: flex; flex-direction: column; position: relative; transform-origin: top left;">
+                        
+                        <!-- Header Laporan -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 30px;">
+                                <!-- FOTO 3:4 -->
+                                <div style="width: 160px; height: 213px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 16px rgba(0,0,0,0.15); border: 4px solid white; background-color: #f1f5f9; flex-shrink: 0;">
+                                    <img id="printFotoImg" crossorigin="anonymous" src="https://lh3.googleusercontent.com/d/1NARBmBx-j4ffaY8089yVSsHDHjs1XQQI" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;" onerror="this.style.display='none';"/>
                                 </div>
-                                <div style="text-align: right;">
-                                    <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a;">ATTENDANCE REPORT</h1>
-                                    <p style="margin: 4px 0 0 0; font-size: 15px; color: #64748b; font-weight: 500;" id="printRange">Periode: -</p>
+                                <div>
+                                    <h2 style="margin: 0; font-size: 32px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;" id="printName">Yessi Roida</h2>
+                                    <p style="margin: 6px 0 0 0; font-size: 22px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;" id="printPosition">SMD</p>
                                 </div>
                             </div>
+                            <div style="text-align: right;">
+                                <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #0f172a;">ATTENDANCE REPORT</h1>
+                                <p style="margin: 6px 0 0 0; font-size: 16px; color: #64748b; font-weight: 500;" id="printRange">Periode: -</p>
+                            </div>
+                        </div>
 
-                            <div style="border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 14px;">
-                                    <thead style="background-color: #4f46e5; color: white;">
-                                        <tr>
-                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">No</th>
-                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; text-align: left;">Date</th>
-                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">IN</th>
-                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">OUT</th>
-                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Shift</th>
-                                            <th style="padding: 16px 10px; font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Overtime</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="printTbody" style="background-color: white;">
-                                        <!-- Data injected via JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: right; font-weight: 500;">
-                                Generated on: <span id="printTimestamp"></span>
-                            </div>
+                        <!-- Area Tabel Melar Mengisi Kekosongan 4:5 -->
+                        <div style="border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); flex-grow: 1;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 16px;">
+                                <thead style="background-color: #4f46e5; color: white;">
+                                    <tr>
+                                        <th style="padding: 20px 12px; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">No</th>
+                                        <th style="padding: 20px 12px; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; text-align: left;">Date</th>
+                                        <th style="padding: 20px 12px; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">IN</th>
+                                        <th style="padding: 20px 12px; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">OUT</th>
+                                        <th style="padding: 20px 12px; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Shift</th>
+                                        <th style="padding: 20px 12px; font-weight: 700; text-transform: uppercase; font-size: 14px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3;">Overtime</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="printTbody" style="background-color: white;">
+                                    <!-- Data injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Footer Waktu Laporan -->
+                        <div style="margin-top: 30px; font-size: 14px; color: #94a3b8; text-align: right; font-weight: 500;">
+                            Generated on: <span id="printTimestamp"></span>
                         </div>
                     </div>
                 </div>
@@ -856,6 +832,31 @@
             }, 300);
         }
 
+        // FUNGSI UPDATE SKALA PREVIEW UNTUK HP
+        function updatePreviewScale() {
+            const printArea = document.getElementById('printArea');
+            const wrapper = document.getElementById('printAreaWrapper');
+            const scrollArea = document.getElementById('previewScrollArea');
+            
+            // Reset dulu ke ukuran asli untuk kalkulasi
+            printArea.style.transform = 'none';
+            
+            const actualHeight = printArea.offsetHeight; 
+            const availableWidth = scrollArea.clientWidth - 32; // -32px untuk padding
+            
+            if (availableWidth < 1080) {
+                const scale = availableWidth / 1080;
+                printArea.style.transform = `scale(${scale})`;
+                // Wrapper menjadi wadah ketat agar tidak ada spasi kosong di HP
+                wrapper.style.width = `${1080 * scale}px`;
+                wrapper.style.height = `${actualHeight * scale}px`;
+            } else {
+                printArea.style.transform = 'none';
+                wrapper.style.width = '1080px';
+                wrapper.style.height = `${actualHeight}px`;
+            }
+        }
+
         function closePreviewModal() {
             const modal = document.getElementById('previewModal');
             const content = document.getElementById('previewModalContent');
@@ -933,24 +934,24 @@
 
                     // STYLING TABEL LAPORAN (INTERAKTIF & MODERN)
                     let rowBg = index % 2 === 0 ? '#ffffff' : '#f8fafc'; // Zebra Striping
-                    let inStyle = "background-color: #10b981; color: white; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-family: monospace; display: inline-block; min-width: 50px;";
-                    let outStyle = "background-color: #ef4444; color: white; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-family: monospace; display: inline-block; min-width: 50px;";
-                    let shiftStyle = "font-weight: 700; color: #334155;";
+                    let inStyle = "background-color: #10b981; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-family: monospace; display: inline-block; font-size: 15px;";
+                    let outStyle = "background-color: #ef4444; color: white; padding: 6px 16px; border-radius: 20px; font-weight: 700; font-family: monospace; display: inline-block; font-size: 15px;";
+                    let shiftStyle = "font-weight: 700; color: #334155; font-size: 15px;";
                     
                     if (item.shift.toLowerCase().includes('off') || item.shift.toLowerCase().includes('libur')) {
-                        shiftStyle = "color: #ef4444; font-weight: 800;";
-                        inStyle = "color: #ef4444; font-weight: 800;";
-                        outStyle = "color: #ef4444; font-weight: 800;";
+                        shiftStyle = "color: #ef4444; font-weight: 800; font-size: 15px;";
+                        inStyle = "color: #ef4444; font-weight: 800; font-size: 15px;";
+                        outStyle = "color: #ef4444; font-weight: 800; font-size: 15px;";
                     }
 
                     pBody.innerHTML += `
                         <tr style="background-color: ${rowBg}; border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 16px 10px; font-weight: 600; color: #64748b;">${index + 1}</td>
-                            <td style="padding: 16px 10px; text-align: left; font-weight: 600; color: #334155;">${formatDateEn(item.tanggalRaw)}</td>
-                            <td style="padding: 12px 10px;"><span style="${inStyle}">${inTime}</span></td>
-                            <td style="padding: 12px 10px;"><span style="${outStyle}">${outTime}</span></td>
-                            <td style="padding: 16px 10px;"><span style="${shiftStyle}">${item.shift}</span></td>
-                            <td style="padding: 16px 10px; font-weight: 600; color: #10b981;">${item.lembur > 0 ? item.lembur + ' Jam' : ''}</td>
+                            <td style="padding: 18px 12px; font-weight: 600; color: #64748b; font-size: 15px;">${index + 1}</td>
+                            <td style="padding: 18px 12px; text-align: left; font-weight: 600; color: #334155; font-size: 15px;">${formatDateEn(item.tanggalRaw)}</td>
+                            <td style="padding: 14px 12px;"><span style="${inStyle}">${inTime}</span></td>
+                            <td style="padding: 14px 12px;"><span style="${outStyle}">${outTime}</span></td>
+                            <td style="padding: 18px 12px;"><span style="${shiftStyle}">${item.shift}</span></td>
+                            <td style="padding: 18px 12px; font-weight: 600; color: #10b981; font-size: 15px;">${item.lembur > 0 ? item.lembur + ' Jam' : ''}</td>
                         </tr>
                     `;
                 });
@@ -965,30 +966,16 @@
             previewModal.classList.remove('hidden');
             previewModal.classList.add('flex');
             
-            // LOGIKA RESPONSIVE PREVIEW UNTUK HP TANPA TERPOTONG
+            // Terapkan animasi muncul
             setTimeout(() => {
                 previewModal.querySelector('.absolute').classList.remove('opacity-0');
                 const content = document.getElementById('previewModalContent');
                 content.classList.remove('scale-95', 'opacity-0');
                 content.classList.add('scale-100', 'opacity-100');
                 
-                const scrollArea = document.getElementById('previewScrollArea');
-                const printArea = document.getElementById('printArea');
-                const wrapper = document.getElementById('printAreaWrapper');
-                
-                const availableWidth = scrollArea.clientWidth - 32; // Memberi ruang padding
-                
-                if (availableWidth < 900) {
-                    const scale = availableWidth / 900;
-                    printArea.style.transform = `scale(${scale})`;
-                    wrapper.style.width = `${900 * scale}px`;
-                    wrapper.style.height = `${printArea.offsetHeight * scale}px`;
-                } else {
-                    printArea.style.transform = 'none';
-                    wrapper.style.width = '900px';
-                    wrapper.style.height = `${printArea.offsetHeight}px`;
-                }
-            }, 300);
+                // Panggil kalkulasi skala HP
+                updatePreviewScale();
+            }, 10);
             
             btn.innerHTML = `Buat Preview`;
         }
@@ -1002,20 +989,17 @@
             
             const printArea = document.getElementById('printArea');
             const wrapper = document.getElementById('printAreaWrapper');
-            const originalTransform = printArea.style.transform;
-            const originalWidth = wrapper.style.width;
-            const originalHeight = wrapper.style.height;
             
             try {
-                // Kembalikan ukuran asli agar hasil gambar sempurna (HD)
+                // Kembalikan ukuran asli (1080x1350) agar hasil jernih HD
                 printArea.style.transform = 'none';
-                wrapper.style.width = '900px';
+                wrapper.style.width = '1080px';
                 wrapper.style.height = `${printArea.offsetHeight}px`;
                 
-                // Beri jeda sepersekian detik agar browser selesai me-render ulang ukuran aslinya
-                await new Promise(r => setTimeout(r, 150)); 
+                // Jeda agar browser selesai merefresh ukuran visualnya sebelum difoto
+                await new Promise(r => setTimeout(r, 200)); 
                 
-                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#f8fafc" });
+                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff" });
                 const image = canvas.toDataURL("image/png");
                 const link = document.createElement('a');
                 link.download = `Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.png`;
@@ -1025,10 +1009,8 @@
                 console.error(err);
                 alert("Terjadi kesalahan saat memproses PNG. Coba lagi.");
             } finally {
-                // Kembalikan ukuran preview ke skala HP
-                printArea.style.transform = originalTransform;
-                wrapper.style.width = originalWidth;
-                wrapper.style.height = originalHeight;
+                // Kembalikan ke skala HP setelah selesai
+                updatePreviewScale();
                 btn.innerHTML = originalContent;
                 lucide.createIcons();
             }
@@ -1043,20 +1025,16 @@
             
             const printArea = document.getElementById('printArea');
             const wrapper = document.getElementById('printAreaWrapper');
-            const originalTransform = printArea.style.transform;
-            const originalWidth = wrapper.style.width;
-            const originalHeight = wrapper.style.height;
             
             try {
-                // Kembalikan ukuran asli agar hasil dokumen sempurna (HD)
+                // Kembalikan ukuran asli
                 printArea.style.transform = 'none';
-                wrapper.style.width = '900px';
+                wrapper.style.width = '1080px';
                 wrapper.style.height = `${printArea.offsetHeight}px`;
                 
-                // Beri jeda sepersekian detik
-                await new Promise(r => setTimeout(r, 150)); 
+                await new Promise(r => setTimeout(r, 200)); 
                 
-                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#f8fafc" });
+                const canvas = await html2canvas(printArea, { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff" });
                 const imgData = canvas.toDataURL("image/png");
                 
                 const { jsPDF } = window.jspdf;
@@ -1070,10 +1048,8 @@
                 console.error(err);
                 alert("Terjadi kesalahan saat memproses PDF. Coba lagi.");
             } finally {
-                // Kembalikan ukuran preview ke skala HP
-                printArea.style.transform = originalTransform;
-                wrapper.style.width = originalWidth;
-                wrapper.style.height = originalHeight;
+                // Kembalikan ke skala HP
+                updatePreviewScale();
                 btn.innerHTML = originalContent;
                 lucide.createIcons();
             }
@@ -1125,6 +1101,13 @@
             const d = new Date(dateString);
             return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
         }
+        
+        // Panggil penyesuaian saat rotasi layar handphone
+        window.addEventListener('resize', () => {
+            if(!document.getElementById('previewModal').classList.contains('hidden')) {
+                updatePreviewScale();
+            }
+        });
     </script>
 </body>
 </html>
