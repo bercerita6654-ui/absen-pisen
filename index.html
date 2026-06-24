@@ -53,24 +53,29 @@
         /* Fix for iOS input zoom */
         input, select { font-size: 16px !important; }
 
-        /* Print Area Settings (Ukuran Proporsional PDF A4) */
+        /* Print Area Settings (Ukuran Proporsional Kertas A4 Web: 794 x 1123px) */
+        /* Digunakan flex layout kolom vertikal penuh agar Footer / TTD didorong ke bagian bawah */
         #printArea {
-            width: 794px; /* A4 width at 96 DPI (Standar Web) */
-            min-height: 1123px; /* A4 height at 96 DPI */
+            width: 794px; 
+            min-height: 1123px; 
             background: #ffffff;
-            padding: 40px;
+            padding: 30px 40px 40px 40px;
             font-family: 'Segoe UI', Arial, sans-serif;
             color: #1e293b;
             margin: 0 auto;
             transform-origin: top left;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
         
         .print-card {
             background: #ffffff;
-            border-radius: 0; /* Dihapus agar seperti kertas asli */
+            border-radius: 0; 
             padding: 0;
-            box-shadow: none; /* Dihapus agar bersih saat dicetak */
+            box-shadow: none; 
+            flex-grow: 1; /* Memastikan Area Tabel memenuhi sisa kekosongan kertas bagian tengah */
         }
     </style>
 </head>
@@ -314,7 +319,7 @@
         </div>
     </div>
 
-    <!-- MODAL PREVIEW LAPORAN (INTERAKTIF & RESPONSIVE SCALING A4) -->
+    <!-- MODAL PREVIEW LAPORAN (INTERAKTIF & RESPONSIVE SCALING A4 SINGLE PAGE) -->
     <div id="previewModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-2 sm:p-4">
         <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm opacity-0 transition-opacity duration-300" onclick="closePreviewModal()"></div>
         <div class="relative bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col h-[95vh] md:max-h-[90vh] scale-95 opacity-0 transition-all duration-300" id="previewModalContent">
@@ -333,38 +338,39 @@
                 <!-- Wrapper Khusus Untuk Isolasi Skala Responsif & Mempertahankan A4 di HP -->
                 <div id="printAreaWrapper" style="margin: 0 auto; overflow: hidden; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: white;">
                     
-                    <!-- AREA DOKUMEN A4 (794px Width) -->
+                    <!-- AREA DOKUMEN A4 (794px Width - Standar Web untuk Cetak) -->
+                    <!-- Dikonfigurasi agar konten padat dan muat dalam 1 Halaman A4 -->
                     <div id="printArea">
                         
                         <!-- Header Laporan -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; text-align: left;">
-                            <div style="display: flex; align-items: center; gap: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
                                 <!-- FOTO 3:4 (Solusi bug html2canvas object-fit dengan background-image) -->
-                                <div style="width: 120px; height: 160px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid white; background-color: #f1f5f9; flex-shrink: 0; position: relative;">
+                                <div style="width: 100px; height: 133px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid white; background-color: #f1f5f9; flex-shrink: 0; position: relative;">
                                     <div style="width: 100%; height: 100%; background-image: url('https://lh3.googleusercontent.com/d/1NARBmBx-j4ffaY8089yVSsHDHjs1XQQI'); background-size: cover; background-position: center top; border-radius: 8px;"></div>
                                 </div>
                                 <div>
-                                    <h2 style="margin: 0; font-size: 26px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;" id="printName">Yessi Roida</h2>
-                                    <p style="margin: 4px 0 0 0; font-size: 16px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;" id="printPosition">SMD</p>
+                                    <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;" id="printName">Yessi Roida</h2>
+                                    <p style="margin: 4px 0 0 0; font-size: 14px; font-weight: 600; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px;" id="printPosition">SMD</p>
                                 </div>
                             </div>
                             <div style="text-align: right;">
-                                <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #0f172a;">ATTENDANCE REPORT</h1>
-                                <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b; font-weight: 500;" id="printRange">Periode: -</p>
+                                <h1 style="margin: 0; font-size: 20px; font-weight: 800; color: #0f172a;">ATTENDANCE REPORT</h1>
+                                <p style="margin: 4px 0 0 0; font-size: 12px; color: #64748b; font-weight: 500;" id="printRange">Periode: -</p>
                             </div>
                         </div>
 
-                        <!-- Area Tabel dengan ukuran pas untuk A4 -->
+                        <!-- Area Tabel dengan ukuran pas untuk 1 Halaman A4 -->
                         <div class="print-card">
-                            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 13px;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 11px;">
                                 <thead style="background-color: #4f46e5; color: white;">
                                     <tr>
-                                        <th style="padding: 12px 8px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 5%;">No</th>
-                                        <th style="padding: 12px 8px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; text-align: left; width: 30%;">Date</th>
-                                        <th style="padding: 12px 8px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 12%;">IN</th>
-                                        <th style="padding: 12px 8px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 12%;">OUT</th>
-                                        <th style="padding: 12px 8px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 23%;">Shift</th>
-                                        <th style="padding: 12px 8px; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 18%;">Overtime</th>
+                                        <th style="padding: 10px 6px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 5%;">No</th>
+                                        <th style="padding: 10px 6px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; text-align: left; width: 30%;">Date</th>
+                                        <th style="padding: 10px 6px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 12%;">IN</th>
+                                        <th style="padding: 10px 6px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 12%;">OUT</th>
+                                        <th style="padding: 10px 6px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 23%;">Shift</th>
+                                        <th style="padding: 10px 6px; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #3730a3; width: 18%;">Overtime</th>
                                     </tr>
                                 </thead>
                                 <tbody id="printTbody" style="background-color: white;">
@@ -373,41 +379,42 @@
                             </table>
                         </div>
                         
-                        <!-- SUMMARY SECTION -->
-                        <div style="margin-top: 20px; padding: 16px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <div style="font-size: 13px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
-                                Kehadiran<br><span id="printTotalKehadiran" style="color: #4f46e5; font-size: 18px; display: block; margin-top: 4px;">0 Hari</span>
+                        <!-- SUMMARY SECTION & SIGNATURE AREA (Didorong ke bawah) -->
+                        <div style="margin-top: auto; padding-top: 20px;">
+                            <div style="padding: 12px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
+                                    Kehadiran<br><span id="printTotalKehadiran" style="color: #4f46e5; font-size: 16px; display: block; margin-top: 4px;">0 Hari</span>
+                                </div>
+                                <div style="width: 1px; height: 24px; background-color: #cbd5e1;"></div>
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
+                                    Off / Libur<br><span id="printTotalOff" style="color: #ef4444; font-size: 16px; display: block; margin-top: 4px;">0 Hari</span>
+                                </div>
+                                <div style="width: 1px; height: 24px; background-color: #cbd5e1;"></div>
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
+                                    Izin / Sakit<br><span id="printTotalIzin" style="color: #f97316; font-size: 16px; display: block; margin-top: 4px;">0 Hari</span>
+                                </div>
+                                <div style="width: 1px; height: 24px; background-color: #cbd5e1;"></div>
+                                <div style="font-size: 12px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
+                                    Total Lembur<br><span id="printTotalLembur" style="color: #10b981; font-size: 16px; display: block; margin-top: 4px;">-</span>
+                                </div>
                             </div>
-                            <div style="width: 1px; height: 30px; background-color: #cbd5e1;"></div>
-                            <div style="font-size: 13px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
-                                Off / Libur<br><span id="printTotalOff" style="color: #ef4444; font-size: 18px; display: block; margin-top: 4px;">0 Hari</span>
+
+                            <div style="margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 12px; color: #1e293b; font-weight: 600;">
+                                <div style="width: 200px;">
+                                    <p style="margin: 0 0 60px 0;" id="printSigPosition">SMD</p>
+                                    <p style="margin: 0; text-decoration: underline; font-weight: 800;" id="printSigName">Yessi Roida</p>
+                                </div>
+                                <div style="width: 200px;">
+                                    <p style="margin: 0 0 60px 0;">Mengetahui,<br>Asisten Manager</p>
+                                    <p style="margin: 0; text-decoration: underline; font-weight: 800;">Laurentsius</p>
+                                </div>
                             </div>
-                            <div style="width: 1px; height: 30px; background-color: #cbd5e1;"></div>
-                            <div style="font-size: 13px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
-                                Izin / Sakit<br><span id="printTotalIzin" style="color: #f97316; font-size: 18px; display: block; margin-top: 4px;">0 Hari</span>
-                            </div>
-                            <div style="width: 1px; height: 30px; background-color: #cbd5e1;"></div>
-                            <div style="font-size: 13px; font-weight: 700; color: #64748b; text-align: center; flex: 1;">
-                                Total Lembur<br><span id="printTotalLembur" style="color: #10b981; font-size: 18px; display: block; margin-top: 4px;">-</span>
+
+                            <div style="margin-top: 20px; font-size: 10px; color: #94a3b8; text-align: right; font-weight: 500; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                                Generated on: <span id="printTimestamp"></span>
                             </div>
                         </div>
 
-                        <!-- SIGNATURE SECTION -->
-                        <div style="margin-top: 40px; display: flex; justify-content: space-between; text-align: center; font-size: 14px; color: #1e293b; font-weight: 600;">
-                            <div style="width: 200px;">
-                                <p style="margin: 0 0 70px 0;" id="printSigPosition">SMD</p>
-                                <p style="margin: 0; text-decoration: underline; font-weight: 800;" id="printSigName">Yessi Roida</p>
-                            </div>
-                            <div style="width: 200px;">
-                                <p style="margin: 0 0 70px 0;">Mengetahui,<br>Asisten Manager</p>
-                                <p style="margin: 0; text-decoration: underline; font-weight: 800;">Laurentsius</p>
-                            </div>
-                        </div>
-
-                        <!-- Footer Waktu Laporan -->
-                        <div style="margin-top: 30px; font-size: 11px; color: #94a3b8; text-align: right; font-weight: 500; border-top: 1px solid #e2e8f0; padding-top: 10px;">
-                            Generated on: <span id="printTimestamp"></span>
-                        </div>
                     </div>
                 </div>
             </div>
