@@ -1238,18 +1238,21 @@
                 printArea.style.width = '794px'; // Paksa ukuran A4!
                 printArea.style.maxWidth = '794px';
                 printArea.style.minWidth = '794px';
+                printArea.style.height = 'max-content'; // Paksa Tinggi Menyesuaikan Konten Full!
                 document.body.appendChild(printArea);
                 
                 // Beri waktu sebentar agar layout dirender sempurna (penting untuk HP)
                 await new Promise(r => setTimeout(r, 400)); 
                 
-                // Eksekusi foto layar (HD Mode)
+                // Eksekusi foto layar (Kunci Scroll Y ke 0 agar tidak terpotong bagian atas/bawah)
                 const canvas = await html2canvas(printArea, { 
                     scale: 2, 
                     useCORS: true, 
                     allowTaint: false, 
                     backgroundColor: "#ffffff",
-                    windowWidth: 794 // Paksa lebar internal browser render ke A4
+                    windowWidth: 794,
+                    scrollY: 0,
+                    scrollX: 0
                 });
                 
                 // 3. Konversi Langsung ke Link Download Base64
@@ -1276,6 +1279,7 @@
                 printArea.style.width = oldWidth;
                 printArea.style.maxWidth = oldMaxWidth;
                 printArea.style.minWidth = oldMinWidth;
+                printArea.style.height = ''; 
                 
                 if (originalNextSibling) {
                     originalParent.insertBefore(printArea, originalNextSibling);
@@ -1289,7 +1293,7 @@
             }
         }
 
-        // AKSI DOWNLOAD PDF "ANTI-TERPOTONG" DARI PREVIEW
+        // AKSI DOWNLOAD PDF MULTI-HALAMAN "ANTI-TERPOTONG" DARI PREVIEW
         async function downloadPDF() {
             const btn = document.getElementById('btnPdf');
             const originalContent = btn.innerHTML;
@@ -1320,29 +1324,46 @@
                 printArea.style.width = '794px'; // Paksa dimensi A4
                 printArea.style.maxWidth = '794px';
                 printArea.style.minWidth = '794px';
+                printArea.style.height = 'max-content'; // Biarkan panjang memanjang ke bawah
                 document.body.appendChild(printArea);
                 
                 await new Promise(r => setTimeout(r, 400)); 
                 
-                // Pada PDF, wajib gunakan rasio asli html2canvas untuk menghindari melar
                 const canvas = await html2canvas(printArea, { 
                     scale: 2, 
                     useCORS: true, 
                     allowTaint: false, 
                     backgroundColor: "#ffffff",
-                    windowWidth: 794
+                    windowWidth: 794,
+                    scrollY: 0,
+                    scrollX: 0
                 });
                 
-                const imgData = canvas.toDataURL("image/jpeg", 0.85);
-                
+                const imgData = canvas.toDataURL("image/jpeg", 0.95);
                 const { jsPDF } = window.jspdf;
-                // PDF dibuat fix format A4
+                
+                // Sistem PDF Multi-Halaman Otomatis
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                // Hitung tinggi PDF secara proporsional dengan gambar canvas
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                const pageHeight = pdf.internal.pageSize.getHeight();
                 
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                // Hitung total tinggi seluruh gambar jika dimasukkan ke PDF
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                // Masukkan gambar (Halaman 1)
+                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Jika masih ada sisa gambar ke bawah, tambahkan halaman baru terus menerus
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight; 
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
                 pdf.save(`Laporan_Absen_${currentDates[0]}_to_${currentDates[1]}.pdf`);
 
             } catch (err) {
@@ -1358,6 +1379,7 @@
                 printArea.style.width = oldWidth;
                 printArea.style.maxWidth = oldMaxWidth;
                 printArea.style.minWidth = oldMinWidth;
+                printArea.style.height = ''; 
                 
                 if (originalNextSibling) {
                     originalParent.insertBefore(printArea, originalNextSibling);
